@@ -22,12 +22,7 @@ import base64
 import os
 import streamlit as st
 
-# Check if file exists
-if os.path.exists("public/logo_main.png"):
-    st.write("✅ Logo file found")
-else:
-    st.write("❌ Logo file NOT found")
-    st.write("Files:", os.listdir("."))
+
 st.set_page_config(
     page_title="Indic-Setu | सरकारी योजनाएं",
     page_icon="logo_bot.png.png",  # You can change this emoji or use your logo
