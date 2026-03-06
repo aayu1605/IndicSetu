@@ -1,14 +1,12 @@
 """
-Indic-Setu Frontend - Streamlit App
-Beautiful interface for rural India government scheme eligibility checker
+Indic-Setu Frontend - Streamlit App (Streamlit Cloud Compatible)
+Works with secrets configuration
 """
 
 import streamlit as st
 import requests
 import json
 from datetime import datetime
-import pyttsx3
-from io import BytesIO
 
 # Page configuration
 st.set_page_config(
@@ -18,10 +16,9 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for beautiful rural-focused design
+# Custom CSS
 st.markdown("""
 <style>
-    /* Root theme */
     :root {
         --primary: #2ecc71;
         --dark-green: #27ae60;
@@ -31,7 +28,6 @@ st.markdown("""
         --danger: #e74c3c;
     }
     
-    /* Typography */
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Lora:wght@400;600&display=swap');
     
     * {
@@ -43,13 +39,11 @@ st.markdown("""
         color: #1a472a;
     }
     
-    /* Main container */
     .main {
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         padding: 20px;
     }
     
-    /* Header styling */
     .header-banner {
         background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%);
         color: white;
@@ -73,7 +67,6 @@ st.markdown("""
         font-size: 1.1em;
     }
     
-    /* Badge styling */
     .badge-container {
         text-align: center;
         margin: 20px 0;
@@ -117,7 +110,6 @@ st.markdown("""
         50% { transform: translateY(-10px); }
     }
     
-    /* Input cards */
     .input-card {
         background: white;
         padding: 20px;
@@ -127,7 +119,6 @@ st.markdown("""
         border-left: 5px solid #2ecc71;
     }
     
-    /* Button styling */
     .stButton > button {
         background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%) !important;
         color: white !important;
@@ -144,7 +135,6 @@ st.markdown("""
         transform: translateY(-2px) !important;
     }
     
-    /* Result box */
     .result-box {
         background: white;
         padding: 25px;
@@ -165,62 +155,23 @@ st.markdown("""
             transform: translateY(0);
         }
     }
-    
-    /* Sidebar */
-    .css-1d391kg {
-        background: linear-gradient(180deg, #ecf0f1 0%, #bdc3c7 100%);
-    }
-    
-    .sidebar-info {
-        background: white;
-        padding: 15px;
-        border-radius: 10px;
-        margin: 10px 0;
-        border-left: 4px solid #f39c12;
-    }
-    
-    /* Voice button */
-    .voice-button {
-        background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
-        color: white;
-        padding: 12px 25px;
-        border-radius: 25px;
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        box-shadow: 0 6px 15px rgba(243, 156, 18, 0.3);
-        margin-top: 10px;
-    }
-    
-    /* Low data mode */
-    .low-data-warning {
-        background: #fff3cd;
-        border-left: 4px solid #ffc107;
-        padding: 12px;
-        border-radius: 5px;
-        margin: 10px 0;
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-        .header-banner h1 {
-            font-size: 1.8em;
-        }
-        .badge-high-priority, .badge-standard {
-            font-size: 1.1em;
-            padding: 15px 30px;
-        }
-    }
 </style>
 """, unsafe_allow_html=True)
 
 # Initialize session state
-if 'api_url' not in st.session_state:
-    st.session_state.api_url = "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"
 if 'last_response' not in st.session_state:
     st.session_state.last_response = None
-if 'low_data_mode' not in st.session_state:
-    st.session_state.low_data_mode = False
+
+# GET API URL - IMPORTANT FIX FOR STREAMLIT CLOUD
+try:
+    # Try to get from secrets first (Streamlit Cloud)
+    api_url = st.secrets.get("api_url", None)
+    if not api_url:
+        # Fallback to environment variable or default
+        api_url = "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"
+except:
+    # If secrets not available, use default
+    api_url = "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"
 
 # Header Banner
 st.markdown("""
@@ -234,44 +185,20 @@ st.markdown("""
 # Sidebar Configuration
 st.sidebar.title("⚙️ Settings & Input")
 
-# Low Data Mode Toggle
-st.sidebar.markdown("### 📊 User Preferences")
-low_data_mode = st.sidebar.checkbox(
-    "🌐 Low-Data Mode (2G Network)",
-    value=st.session_state.low_data_mode,
-    help="Disable images and reduce animations for slower networks"
-)
-st.session_state.low_data_mode = low_data_mode
-
-if low_data_mode:
-    st.sidebar.markdown("""
-    <div class="low-data-warning">
-    💡 Low-Data Mode: Images disabled, minimal animations enabled
-    </div>
-    """, unsafe_allow_html=True)
-
 # API Configuration
-st.sidebar.markdown("### 🔌 API Configuration")
-api_url = st.sidebar.text_input(
+st.sidebar.markdown("### 🔗 API Configuration")
+api_url_input = st.sidebar.text_input(
     "AWS API Gateway URL",
-    value=st.session_state.api_url,
-    help="Enter your Lambda API Gateway endpoint",
-    placeholder="https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"
+    value=api_url,
+    help="Your AWS API Gateway endpoint URL"
 )
-st.session_state.api_url = api_url
+if api_url_input:
+    api_url = api_url_input
 
-# Language Selection
-st.sidebar.markdown("### 🗣️ Language Preference")
-language = st.sidebar.selectbox(
-    "Select Language",
-    ["Hindi-English Mix (सर्वोत्तम) 🇮🇳", "English", "Hindi (हिंदी)"],
-    help="Choose your preferred language"
-)
-
-# Occupation Selection
-st.sidebar.markdown("### 👨‍🌾 Occupation")
+# Occupation Input
+st.sidebar.markdown("### 👨‍💼 Your Details")
 occupation = st.sidebar.selectbox(
-    "Your Main Occupation",
+    "Select your occupation",
     [
         "Farmer (किसान)",
         "Agricultural Labourer (कृषि मजदूर)",
@@ -297,7 +224,7 @@ income = st.sidebar.number_input(
 
 # Display eligibility info
 st.sidebar.markdown("### ✅ Eligibility Check")
-if income < 100000 and "Farmer" in occupation or "Labourer" in occupation:
+if income < 100000 and ("Farmer" in occupation or "Labourer" in occupation):
     st.sidebar.success("🎯 **High-Priority** - You may qualify for premium schemes!")
 elif income < 300000:
     st.sidebar.info("📋 **Standard** - Multiple schemes available for you")
@@ -347,7 +274,6 @@ if help_button:
     1. **Set Your Details** (Sidebar):
        - Select your occupation
        - Enter your annual income
-       - Choose your language
     
     2. **Ask Your Question**:
        - Type any question about government schemes
@@ -356,7 +282,6 @@ if help_button:
     3. **Get Your Answer**:
        - View detailed, personalized information
        - Check your eligibility status
-       - Listen to the answer in Hindi-English
     
     4. **Take Action**:
        - Follow the next steps provided
@@ -367,7 +292,7 @@ if help_button:
 # API Call and Response Handling
 if submit_button and query.strip():
     if not api_url or "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query" in api_url:
-        st.error("⚠️ Please configure your AWS API Gateway URL in Settings (Sidebar)")
+        st.error("⚠️ API URL not configured. Check sidebar configuration.")
     else:
         with st.spinner("🔄 Searching government schemes for you..."):
             try:
@@ -378,6 +303,9 @@ if submit_button and query.strip():
                     "occupation": occupation
                 }
                 
+                # Debug: Show what URL we're calling
+                st.write(f"📡 Calling: {api_url}")
+                
                 # Make API request
                 response = requests.post(
                     api_url,
@@ -385,6 +313,8 @@ if submit_button and query.strip():
                     headers={"Content-Type": "application/json"},
                     timeout=15
                 )
+                
+                st.write(f"Status: {response.status_code}")
                 
                 if response.status_code == 200:
                     result = response.json()
@@ -420,46 +350,6 @@ if submit_button and query.strip():
                     </div>
                     """, unsafe_allow_html=True)
                     
-                    # Voice TTS Section
-                    st.markdown("### 🎧 Awaaz mein Suniye (Listen in Hindi-English)")
-                    
-                    col1, col2 = st.columns([3, 1])
-                    
-                    with col1:
-                        voice_text = result.get('voice_text', '')
-                        st.text_area(
-                            "Voice Text",
-                            value=voice_text,
-                            height=80,
-                            disabled=True,
-                            label_visibility="collapsed"
-                        )
-                    
-                    with col2:
-                        if st.button("🔊 Play", use_container_width=True):
-                            try:
-                                # Initialize text-to-speech
-                                engine = pyttsx3.init()
-                                engine.setProperty('rate', 150)  # Slow speech for clarity
-                                
-                                # Generate speech
-                                audio_buffer = BytesIO()
-                                engine.save_to_file(
-                                    voice_text,
-                                    '/tmp/indic_setu_audio.mp3'
-                                )
-                                engine.runAndWait()
-                                
-                                # Display audio player
-                                with open('/tmp/indic_setu_audio.mp3', 'rb') as f:
-                                    st.audio(f.read(), format='audio/mp3')
-                                
-                                st.success("🎵 Audio generated successfully!")
-                            
-                            except Exception as e:
-                                st.warning(f"⚠️ Text-to-speech not available: {str(e)}")
-                                st.info("Try using browser developer tools or install pyttsx3")
-                    
                     # Additional Information Section
                     st.markdown("### 📋 Your Profile Summary")
                     summary_col1, summary_col2, summary_col3 = st.columns(3)
@@ -494,13 +384,14 @@ if submit_button and query.strip():
                     )
                 
                 else:
-                    st.error(f"❌ API Error (Status {response.status_code}): {response.text}")
+                    st.error(f"❌ API Error (Status {response.status_code})")
+                    st.error(f"Response: {response.text}")
             
             except requests.exceptions.Timeout:
-                st.error("⏱️ Request timed out. Please check your internet connection and API URL.")
+                st.error("⏱️ Request timed out. Check internet connection and API URL.")
             
             except requests.exceptions.ConnectionError:
-                st.error("🔌 Cannot connect to the API. Please verify your AWS API Gateway URL.")
+                st.error("🔌 Cannot connect to API. Verify AWS API Gateway URL is correct and deployed.")
             
             except Exception as e:
                 st.error(f"⚠️ Error: {str(e)}")
