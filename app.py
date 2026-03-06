@@ -1,6 +1,6 @@
 """
-Indic-Setu - DEBUG VERSION
-Shows exactly what's happening with API URL configuration
+Indic-Setu - WORKING VERSION
+Simple app that displays API responses correctly
 """
 
 import streamlit as st
@@ -8,155 +8,218 @@ import requests
 import json
 
 st.set_page_config(
-    page_title="Indic-Setu | DEBUG",
-    page_icon="🔧",
+    page_title="Indic-Setu | Sarkari Yojnayen",
+    page_icon="🌾",
     layout="wide"
 )
 
-st.title("🔧 Indic-Setu DEBUG MODE")
-st.write("This shows what's actually happening with your configuration")
+# CSS styling
+st.markdown("""
+<style>
+    .header-banner {
+        background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .header-banner h1 {
+        color: white;
+        margin: 0;
+    }
+    .badge-high {
+        background: #2ecc71;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+    .badge-standard {
+        background: #3498db;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+    .result-box {
+        background: white;
+        padding: 20px;
+        border-left: 6px solid #2ecc71;
+        border-radius: 10px;
+        margin: 20px 0;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# ===== DEBUG SECTION =====
-st.markdown("---")
-st.markdown("## 🔍 DEBUG INFORMATION")
+# Header
+st.markdown("""
+<div class="header-banner">
+    <h1>🌾 Indic-Setu</h1>
+    <p>Sarkari Yojnaon ke Liye Aasaan Pataptar</p>
+    <p style="opacity: 0.9;">Government Schemes Made Simple</p>
+</div>
+""", unsafe_allow_html=True)
 
-# Check 1: Can we access secrets at all?
-st.write("### 1. Checking Streamlit Secrets Access")
-try:
-    all_secrets = dict(st.secrets)
-    st.write("✅ Secrets dictionary is accessible")
-    st.write("**Available secret keys:**", list(all_secrets.keys()))
-except Exception as e:
-    st.write("❌ Cannot access secrets:", str(e))
-    all_secrets = {}
+# API URL (hardcoded for simplicity)
+API_URL = "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"
 
-# Check 2: Can we get the API URL specifically?
-st.write("### 2. Checking API URL Secret")
-try:
-    api_url_from_secrets = st.secrets.get("api_url")
-    if api_url_from_secrets:
-        st.write("✅ Found api_url in secrets")
-        st.write("**Value:**", api_url_from_secrets)
-        api_url = api_url_from_secrets
-    else:
-        st.write("⚠️ api_url key exists but is empty or None")
-        api_url = None
-except Exception as e:
-    st.write("❌ Error reading api_url:", str(e))
-    api_url = None
+# Sidebar
+st.sidebar.title("⚙️ Your Details")
 
-# Check 3: Try different ways to access it
-st.write("### 3. Alternative Secret Access Methods")
-
-try:
-    method1 = st.secrets["api_url"]
-    st.write("✅ Method 1 (direct access): Success")
-    st.write("   Value:", method1)
-except:
-    st.write("❌ Method 1 (direct access): Failed")
-    method1 = None
-
-try:
-    method2 = st.secrets.get("api_url", "NOT_FOUND")
-    st.write("✅ Method 2 (.get()): Success")
-    st.write("   Value:", method2)
-except:
-    st.write("❌ Method 2 (.get()): Failed")
-    method2 = None
-
-# Final API URL determination
-st.write("### 4. Final API URL Determination")
-if api_url:
-    st.success(f"✅ Using: {api_url}")
-    use_api_url = api_url
-else:
-    default_url = "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"
-    st.warning(f"⚠️ Using default: {default_url}")
-    use_api_url = default_url
-
-# ===== END DEBUG SECTION =====
-st.markdown("---")
-
-# Allow manual override
-st.write("### 5. Manual Override")
-st.info("If the above shows errors, you can manually paste your API URL below:")
-manual_api_url = st.text_input(
-    "Manual API URL (leave empty to use auto-detected):",
-    value="",
-    placeholder="https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"
+occupation = st.sidebar.selectbox(
+    "Select your occupation",
+    [
+        "Farmer (किसान)",
+        "Agricultural Labourer (कृषि मजदूर)",
+        "Weaver (बुनकर)",
+        "Artisan (शिल्पकार)",
+        "Self-Employed (स्व-नियोजित)",
+        "Unemployed (बेरोजगार)",
+        "Student (विद्यार्थी)",
+        "Other (अन्य)"
+    ]
 )
 
-if manual_api_url:
-    final_api_url = manual_api_url
-    st.success(f"Using manual URL: {final_api_url}")
+income = st.sidebar.number_input(
+    "Annual Income (₹)",
+    min_value=0,
+    value=80000,
+    step=10000
+)
+
+# Check eligibility
+st.sidebar.markdown("### ✅ Eligibility Preview")
+if income < 100000 and ("Farmer" in occupation or "Labourer" in occupation):
+    st.sidebar.success("🎯 High-Priority Eligible!")
+elif income < 300000:
+    st.sidebar.info("📋 Standard Eligible")
 else:
-    final_api_url = use_api_url
-    st.info(f"Using auto-detected URL: {final_api_url}")
+    st.sidebar.warning("⚠️ Limited Eligibility")
 
-# ===== TEST API CALL =====
-st.markdown("---")
-st.markdown("## 🧪 Test API Call")
+# Main content
+st.markdown("### 🤔 What would you like to know?")
 
-if st.button("Click to test API connection"):
-    st.write(f"Testing with URL: {final_api_url}")
+query = st.text_area(
+    "Ask about government schemes...",
+    placeholder="उदाहरण: मुझे PM-Kisan के लिए आवेदन कैसे करना है?",
+    height=100,
+    label_visibility="collapsed"
+)
+
+col1, col2, col3 = st.columns([2, 1, 1])
+
+with col1:
+    search_button = st.button("🔍 खोजें | Search", use_container_width=True)
+
+with col2:
+    clear_button = st.button("🔄 Clear", use_container_width=True)
+
+with col3:
+    help_button = st.button("❓ Help", use_container_width=True)
+
+if clear_button:
+    st.rerun()
+
+if help_button:
+    st.info("""
+    ### How to Use Indic-Setu:
     
-    try:
-        payload = {
-            "query": "test",
-            "income": 50000,
-            "occupation": "Farmer"
-        }
-        
-        with st.spinner("Sending request..."):
+    1. **Select your occupation** from the sidebar
+    2. **Enter your annual income**
+    3. **Ask any question** about government schemes
+    4. **Click Search** to get personalized information
+    5. **Check your eligibility status** and available schemes
+    """)
+
+# API Call
+if search_button and query.strip():
+    with st.spinner("🔄 Searching government schemes..."):
+        try:
+            payload = {
+                "query": query,
+                "income": int(income),
+                "occupation": occupation
+            }
+            
             response = requests.post(
-                final_api_url,
+                API_URL,
                 json=payload,
                 headers={"Content-Type": "application/json"},
-                timeout=10
+                timeout=15
             )
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Display eligibility badge
+                st.markdown("### ✨ Your Eligibility Status")
+                
+                eligibility = result.get('eligibility_status', 'Unknown')
+                if eligibility == 'High-Priority':
+                    st.markdown(f'<div class="badge-high">✅ {eligibility}</div>', unsafe_allow_html=True)
+                    st.success("🎉 You are HIGH-PRIORITY eligible!")
+                else:
+                    st.markdown(f'<div class="badge-standard">📋 {eligibility}</div>', unsafe_allow_html=True)
+                    st.info("Multiple schemes are available for you!")
+                
+                # Display answer
+                st.markdown("### 📝 Detailed Information")
+                answer = result.get('answer', 'No information available')
+                st.markdown(f'<div class="result-box">{answer}</div>', unsafe_allow_html=True)
+                
+                # Profile summary
+                st.markdown("### 📋 Your Profile")
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    st.metric("Annual Income", f"₹{income:,}")
+                
+                with col2:
+                    st.metric("Occupation", occupation.split("(")[0].strip())
+                
+                with col3:
+                    st.metric("Status", eligibility)
+                
+                # Next steps
+                st.markdown("### 🎯 Next Steps")
+                st.info("""
+                ✅ Save this information for reference
+                ✅ Contact your local Gram Panchayat or government office
+                ✅ Prepare required documents (Aadhar, Land Records, Bank Account)
+                ✅ Apply online via official government portals
+                ✅ Track your application status
+                """)
+                
+                # Download option
+                st.markdown("### 📥 Export Information")
+                result_json = json.dumps(result, ensure_ascii=False, indent=2)
+                st.download_button(
+                    "📄 Download as JSON",
+                    result_json,
+                    "indic_setu_result.json",
+                    "application/json"
+                )
+            
+            else:
+                st.error(f"❌ API Error (Status {response.status_code})")
+                st.error(f"Response: {response.text}")
         
-        st.write(f"**Status Code:** {response.status_code}")
+        except requests.exceptions.Timeout:
+            st.error("⏱️ Request timed out. Please try again.")
         
-        if response.status_code == 200:
-            st.success("✅ API CALL SUCCESSFUL!")
-            result = response.json()
-            st.write("**Response:**")
-            st.json(result)
-        else:
-            st.error(f"❌ API returned status {response.status_code}")
-            st.write("**Response:**")
-            st.write(response.text)
-    
-    except requests.exceptions.ConnectionError as e:
-        st.error(f"❌ Connection Error: Cannot reach {final_api_url}")
-        st.write("Check if:")
-        st.write("1. URL is correct")
-        st.write("2. AWS API Gateway is deployed")
-        st.write("3. POST /query method exists")
-    
-    except requests.exceptions.Timeout:
-        st.error("❌ Request timed out - API took too long to respond")
-    
-    except Exception as e:
-        st.error(f"❌ Unexpected error: {str(e)}")
+        except requests.exceptions.ConnectionError:
+            st.error("🔌 Cannot connect to API. Check your internet connection.")
+        
+        except Exception as e:
+            st.error(f"⚠️ Error: {str(e)}")
 
-# ===== INSTRUCTIONS =====
+# Footer
 st.markdown("---")
-st.markdown("## 📋 What to Do Next")
-
-st.info("""
-**If debug shows ✅ for everything:**
-- Secrets are configured correctly
-- Use the app_streamlit_cloud.py code (it should work)
-- Test the API call button above
-
-**If debug shows ❌ for secrets:**
-- Go to Streamlit Cloud Settings → Secrets
-- Add this line: `api_url = "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"`
-- Save and redeploy
-
-**If API test fails:**
-- Check AWS Lambda CloudWatch logs
-- Verify POST /query method exists in API Gateway
-- Verify Lambda is working
-""")
+st.markdown("""
+<div style="text-align: center; color: #7f8c8d; font-size: 0.9em;">
+    <p>🌾 <strong>Indic-Setu</strong> | Making Government Schemes Accessible to Rural India</p>
+    <p>सरकारी योजनाओं को आसान और सुलभ बनाना</p>
+    <p style="font-size: 0.85em; opacity: 0.7;">© 2024 | Empowering Rural Communities</p>
+</div>
+""", unsafe_allow_html=True)
