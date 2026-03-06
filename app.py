@@ -20,7 +20,7 @@ import base64
 
 st.set_page_config(
     page_title="Indic-Setu | सरकारी योजनाएं",
-    page_icon="🌾",
+    page_icon="logo_bot.png.png",  # You can change this emoji or use your logo
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -304,6 +304,17 @@ def t(key):
 # API Configuration
 API_URL = "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"
 
+# Display Main Logo
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    try:
+        st.image("public/logo_main.png", width=200)
+    except:
+        st.write("🌾 Indic-Setu")  # Fallback if logo not found
+
+st.markdown("---")  # Divider line
+
+
 # Language Selector (Top Center)
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
@@ -433,8 +444,20 @@ with tab1:
                     st.session_state.history.append(search_item)
                     st.session_state.last_response = result
                     
+                    
+                    # Add Bot Logo with greeting
+                    col1, col2, col3 = st.columns([1, 3, 1])
+                    with col3:
+                        try:
+                           st.image("public/logo_bot.png", width=100)
+                        except:
+                            st.write("🤖")
+
+                    st.markdown("**Your Results:**")
+
                     # Display Results
                     st.markdown(f"### {t('eligibility')}")
+
                     eligibility = result.get('eligibility_status', 'Unknown')
                     
                     if eligibility == 'High-Priority':
