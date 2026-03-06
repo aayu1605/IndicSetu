@@ -1,407 +1,162 @@
 """
-Indic-Setu Frontend - Streamlit App (Streamlit Cloud Compatible)
-Works with secrets configuration
+Indic-Setu - DEBUG VERSION
+Shows exactly what's happening with API URL configuration
 """
 
 import streamlit as st
 import requests
 import json
-from datetime import datetime
 
-# Page configuration
 st.set_page_config(
-    page_title="Indic-Setu | Sarkari Yojnayen",
-    page_icon="🌾",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_title="Indic-Setu | DEBUG",
+    page_icon="🔧",
+    layout="wide"
 )
 
-# Custom CSS
-st.markdown("""
-<style>
-    :root {
-        --primary: #2ecc71;
-        --dark-green: #27ae60;
-        --gold: #f39c12;
-        --earth: #8b7355;
-        --sky: #3498db;
-        --danger: #e74c3c;
-    }
-    
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Lora:wght@400;600&display=swap');
-    
-    * {
-        font-family: 'Poppins', sans-serif;
-    }
-    
-    h1, h2, h3 {
-        font-family: 'Lora', serif;
-        color: #1a472a;
-    }
-    
-    .main {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        padding: 20px;
-    }
-    
-    .header-banner {
-        background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%);
-        color: white;
-        padding: 30px;
-        border-radius: 15px;
-        margin-bottom: 30px;
-        box-shadow: 0 8px 20px rgba(46, 204, 113, 0.3);
-        text-align: center;
-    }
-    
-    .header-banner h1 {
-        color: white;
-        font-size: 2.5em;
-        margin: 0;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    }
-    
-    .header-banner p {
-        color: rgba(255,255,255,0.9);
-        margin-top: 10px;
-        font-size: 1.1em;
-    }
-    
-    .badge-container {
-        text-align: center;
-        margin: 20px 0;
-    }
-    
-    .badge-high-priority {
-        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-        color: white;
-        padding: 20px 40px;
-        border-radius: 50px;
-        font-size: 1.5em;
-        font-weight: 700;
-        box-shadow: 0 10px 30px rgba(46, 204, 113, 0.4);
-        display: inline-block;
-        animation: pulse-badge 2s ease-in-out infinite;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    
-    .badge-standard {
-        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-        color: white;
-        padding: 20px 40px;
-        border-radius: 50px;
-        font-size: 1.5em;
-        font-weight: 700;
-        box-shadow: 0 10px 30px rgba(52, 152, 219, 0.4);
-        display: inline-block;
-        animation: float-badge 3s ease-in-out infinite;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    
-    @keyframes pulse-badge {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-    }
-    
-    @keyframes float-badge {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-    }
-    
-    .input-card {
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 15px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        border-left: 5px solid #2ecc71;
-    }
-    
-    .stButton > button {
-        background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%) !important;
-        color: white !important;
-        padding: 12px 30px !important;
-        font-weight: 600 !important;
-        border-radius: 25px !important;
-        border: none !important;
-        box-shadow: 0 6px 15px rgba(46, 204, 113, 0.3) !important;
-        transition: all 0.3s ease !important;
-    }
-    
-    .stButton > button:hover {
-        box-shadow: 0 8px 20px rgba(46, 204, 113, 0.5) !important;
-        transform: translateY(-2px) !important;
-    }
-    
-    .result-box {
-        background: white;
-        padding: 25px;
-        border-radius: 10px;
-        border-left: 6px solid #2ecc71;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-        margin-top: 20px;
-        animation: slideIn 0.5s ease-out;
-    }
-    
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-</style>
-""", unsafe_allow_html=True)
+st.title("🔧 Indic-Setu DEBUG MODE")
+st.write("This shows what's actually happening with your configuration")
 
-# Initialize session state
-if 'last_response' not in st.session_state:
-    st.session_state.last_response = None
-
-# GET API URL - IMPORTANT FIX FOR STREAMLIT CLOUD
-try:
-    # Try to get from secrets first (Streamlit Cloud)
-    api_url = st.secrets.get("api_url", None)
-    if not api_url:
-        # Fallback to environment variable or default
-        api_url = "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"
-except:
-    # If secrets not available, use default
-    api_url = "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"
-
-# Header Banner
-st.markdown("""
-<div class="header-banner">
-    <h1>🌾 Indic-Setu</h1>
-    <p>Sarkari Yojnaon ke Liye Aasaan Pataptar</p>
-    <p style="font-size: 0.9em; opacity: 0.9;">Government Schemes Made Simple</p>
-</div>
-""", unsafe_allow_html=True)
-
-# Sidebar Configuration
-st.sidebar.title("⚙️ Settings & Input")
-
-# API Configuration
-st.sidebar.markdown("### 🔗 API Configuration")
-api_url_input = st.sidebar.text_input(
-    "AWS API Gateway URL",
-    value=api_url,
-    help="Your AWS API Gateway endpoint URL"
-)
-if api_url_input:
-    api_url = api_url_input
-
-# Occupation Input
-st.sidebar.markdown("### 👨‍💼 Your Details")
-occupation = st.sidebar.selectbox(
-    "Select your occupation",
-    [
-        "Farmer (किसान)",
-        "Agricultural Labourer (कृषि मजदूर)",
-        "Weaver (बुनकर)",
-        "Artisan (शिल्पकार)",
-        "Self-Employed (स्व-नियोजित)",
-        "Unemployed (बेरोजगार)",
-        "Student (विद्यार्थी)",
-        "Other (अन्य)"
-    ],
-    help="Select your occupation for accurate scheme matching"
-)
-
-# Income Input
-st.sidebar.markdown("### 💰 Annual Income")
-income = st.sidebar.number_input(
-    "Your Annual Income (₹)",
-    min_value=0,
-    value=0,
-    step=10000,
-    help="Enter your total annual household income"
-)
-
-# Display eligibility info
-st.sidebar.markdown("### ✅ Eligibility Check")
-if income < 100000 and ("Farmer" in occupation or "Labourer" in occupation):
-    st.sidebar.success("🎯 **High-Priority** - You may qualify for premium schemes!")
-elif income < 300000:
-    st.sidebar.info("📋 **Standard** - Multiple schemes available for you")
-else:
-    st.sidebar.warning("⚠️ **Limited** - Some schemes may not be available")
-
-st.sidebar.markdown("---")
-st.sidebar.markdown("""
-### 📞 Support
-**Toll-Free:** 1800-180-1111  
-**Website:** indic-setu.gov.in  
-**Email:** help@indicsetu.in
-""")
-
-# Main Content Area
-st.markdown("### 🤔 What would you like to know?")
-
-# Query Input
-query = st.text_area(
-    "Ask about government schemes...",
-    placeholder="उदाहरण: मुझे PM-Kisan के लिए आवेदन कैसे करना है?\nExample: How do I apply for PM-Kisan?",
-    height=100,
-    label_visibility="collapsed"
-)
-
-# Submit Button
-col1, col2, col3 = st.columns([2, 1, 1])
-
-with col1:
-    submit_button = st.button("🔍 खोजें | Search", use_container_width=True)
-
-with col2:
-    clear_button = st.button("🔄 Clear", use_container_width=True)
-
-with col3:
-    help_button = st.button("❓ Help", use_container_width=True)
-
-# Clear functionality
-if clear_button:
-    st.rerun()
-
-# Help modal
-if help_button:
-    st.info("""
-    ### How to use Indic-Setu:
-    
-    1. **Set Your Details** (Sidebar):
-       - Select your occupation
-       - Enter your annual income
-    
-    2. **Ask Your Question**:
-       - Type any question about government schemes
-       - Examples: "How to apply for PM-Kisan?", "What is my eligibility?"
-    
-    3. **Get Your Answer**:
-       - View detailed, personalized information
-       - Check your eligibility status
-    
-    4. **Take Action**:
-       - Follow the next steps provided
-       - Contact local government office
-       - Apply online via official portals
-    """)
-
-# API Call and Response Handling
-if submit_button and query.strip():
-    if not api_url or "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query" in api_url:
-        st.error("⚠️ API URL not configured. Check sidebar configuration.")
-    else:
-        with st.spinner("🔄 Searching government schemes for you..."):
-            try:
-                # Prepare request payload
-                payload = {
-                    "query": query,
-                    "income": int(income),
-                    "occupation": occupation
-                }
-                
-                # Debug: Show what URL we're calling
-                st.write(f"📡 Calling: {api_url}")
-                
-                # Make API request
-                response = requests.post(
-                    api_url,
-                    json=payload,
-                    headers={"Content-Type": "application/json"},
-                    timeout=15
-                )
-                
-                st.write(f"Status: {response.status_code}")
-                
-                if response.status_code == 200:
-                    result = response.json()
-                    st.session_state.last_response = result
-                    
-                    # Display eligibility badge
-                    st.markdown("### ✨ Your Eligibility Status")
-                    
-                    if result.get('eligibility_status') == 'High-Priority':
-                        st.markdown("""
-                        <div class="badge-container">
-                            <div class="badge-high-priority">
-                                ✅ HIGH-PRIORITY ELIGIBLE
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        st.success("🎉 आप उच्च प्राथमिकता के लिए योग्य हैं! You are HIGH-PRIORITY eligible!")
-                    else:
-                        st.markdown("""
-                        <div class="badge-container">
-                            <div class="badge-standard">
-                                📋 STANDARD ELIGIBLE
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        st.info("कई योजनाएं आपके लिए उपलब्ध हैं। Multiple schemes available for you.")
-                    
-                    # Display main answer
-                    st.markdown("### 📝 Detailed Information")
-                    st.markdown(f"""
-                    <div class="result-box">
-                        {result.get('answer', 'No information available')}
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    # Additional Information Section
-                    st.markdown("### 📋 Your Profile Summary")
-                    summary_col1, summary_col2, summary_col3 = st.columns(3)
-                    
-                    with summary_col1:
-                        st.metric("Annual Income", f"₹{income:,}", delta="High Priority" if income < 100000 else "Standard")
-                    
-                    with summary_col2:
-                        st.metric("Occupation", occupation.split("(")[0].strip())
-                    
-                    with summary_col3:
-                        st.metric("Status", result.get('eligibility_status', 'Unknown'))
-                    
-                    # Next Steps
-                    st.markdown("### 🎯 Next Steps")
-                    st.info("""
-                    ✅ Save this information for reference  
-                    ✅ Contact your local Gram Panchayat or government office  
-                    ✅ Prepare required documents (Aadhar, Land Records, Bank Account)  
-                    ✅ Apply online via official government portals  
-                    ✅ Keep tracking your application status  
-                    """)
-                    
-                    # Download option
-                    st.markdown("### 📥 Export Information")
-                    result_json = json.dumps(result, ensure_ascii=False, indent=2)
-                    st.download_button(
-                        "📄 Download as JSON",
-                        result_json,
-                        "indic_setu_result.json",
-                        "application/json"
-                    )
-                
-                else:
-                    st.error(f"❌ API Error (Status {response.status_code})")
-                    st.error(f"Response: {response.text}")
-            
-            except requests.exceptions.Timeout:
-                st.error("⏱️ Request timed out. Check internet connection and API URL.")
-            
-            except requests.exceptions.ConnectionError:
-                st.error("🔌 Cannot connect to API. Verify AWS API Gateway URL is correct and deployed.")
-            
-            except Exception as e:
-                st.error(f"⚠️ Error: {str(e)}")
-
-# Footer
+# ===== DEBUG SECTION =====
 st.markdown("---")
-st.markdown("""
-<div style="text-align: center; color: #7f8c8d; font-size: 0.9em; margin-top: 30px;">
-    <p>🌾 <strong>Indic-Setu</strong> | Making Government Schemes Accessible to Rural India</p>
-    <p>सरकारी योजनाओं को आसान और सुलभ बनाना | Built for the Hackathon with ❤️</p>
-    <p style="font-size: 0.85em; opacity: 0.7;">© 2024 | Empowering Rural Communities | Version 1.0</p>
-</div>
-""", unsafe_allow_html=True)
+st.markdown("## 🔍 DEBUG INFORMATION")
+
+# Check 1: Can we access secrets at all?
+st.write("### 1. Checking Streamlit Secrets Access")
+try:
+    all_secrets = dict(st.secrets)
+    st.write("✅ Secrets dictionary is accessible")
+    st.write("**Available secret keys:**", list(all_secrets.keys()))
+except Exception as e:
+    st.write("❌ Cannot access secrets:", str(e))
+    all_secrets = {}
+
+# Check 2: Can we get the API URL specifically?
+st.write("### 2. Checking API URL Secret")
+try:
+    api_url_from_secrets = st.secrets.get("api_url")
+    if api_url_from_secrets:
+        st.write("✅ Found api_url in secrets")
+        st.write("**Value:**", api_url_from_secrets)
+        api_url = api_url_from_secrets
+    else:
+        st.write("⚠️ api_url key exists but is empty or None")
+        api_url = None
+except Exception as e:
+    st.write("❌ Error reading api_url:", str(e))
+    api_url = None
+
+# Check 3: Try different ways to access it
+st.write("### 3. Alternative Secret Access Methods")
+
+try:
+    method1 = st.secrets["api_url"]
+    st.write("✅ Method 1 (direct access): Success")
+    st.write("   Value:", method1)
+except:
+    st.write("❌ Method 1 (direct access): Failed")
+    method1 = None
+
+try:
+    method2 = st.secrets.get("api_url", "NOT_FOUND")
+    st.write("✅ Method 2 (.get()): Success")
+    st.write("   Value:", method2)
+except:
+    st.write("❌ Method 2 (.get()): Failed")
+    method2 = None
+
+# Final API URL determination
+st.write("### 4. Final API URL Determination")
+if api_url:
+    st.success(f"✅ Using: {api_url}")
+    use_api_url = api_url
+else:
+    default_url = "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"
+    st.warning(f"⚠️ Using default: {default_url}")
+    use_api_url = default_url
+
+# ===== END DEBUG SECTION =====
+st.markdown("---")
+
+# Allow manual override
+st.write("### 5. Manual Override")
+st.info("If the above shows errors, you can manually paste your API URL below:")
+manual_api_url = st.text_input(
+    "Manual API URL (leave empty to use auto-detected):",
+    value="",
+    placeholder="https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"
+)
+
+if manual_api_url:
+    final_api_url = manual_api_url
+    st.success(f"Using manual URL: {final_api_url}")
+else:
+    final_api_url = use_api_url
+    st.info(f"Using auto-detected URL: {final_api_url}")
+
+# ===== TEST API CALL =====
+st.markdown("---")
+st.markdown("## 🧪 Test API Call")
+
+if st.button("Click to test API connection"):
+    st.write(f"Testing with URL: {final_api_url}")
+    
+    try:
+        payload = {
+            "query": "test",
+            "income": 50000,
+            "occupation": "Farmer"
+        }
+        
+        with st.spinner("Sending request..."):
+            response = requests.post(
+                final_api_url,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=10
+            )
+        
+        st.write(f"**Status Code:** {response.status_code}")
+        
+        if response.status_code == 200:
+            st.success("✅ API CALL SUCCESSFUL!")
+            result = response.json()
+            st.write("**Response:**")
+            st.json(result)
+        else:
+            st.error(f"❌ API returned status {response.status_code}")
+            st.write("**Response:**")
+            st.write(response.text)
+    
+    except requests.exceptions.ConnectionError as e:
+        st.error(f"❌ Connection Error: Cannot reach {final_api_url}")
+        st.write("Check if:")
+        st.write("1. URL is correct")
+        st.write("2. AWS API Gateway is deployed")
+        st.write("3. POST /query method exists")
+    
+    except requests.exceptions.Timeout:
+        st.error("❌ Request timed out - API took too long to respond")
+    
+    except Exception as e:
+        st.error(f"❌ Unexpected error: {str(e)}")
+
+# ===== INSTRUCTIONS =====
+st.markdown("---")
+st.markdown("## 📋 What to Do Next")
+
+st.info("""
+**If debug shows ✅ for everything:**
+- Secrets are configured correctly
+- Use the app_streamlit_cloud.py code (it should work)
+- Test the API call button above
+
+**If debug shows ❌ for secrets:**
+- Go to Streamlit Cloud Settings → Secrets
+- Add this line: `api_url = "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"`
+- Save and redeploy
+
+**If API test fails:**
+- Check AWS Lambda CloudWatch logs
+- Verify POST /query method exists in API Gateway
+- Verify Lambda is working
+""")
