@@ -1,13 +1,9 @@
 """
-INDIC-SETU - PRODUCTION READY HACKATHON VERSION
-Features:
-- Working voice input & TTS
-- 10+ languages
-- Favorites saving
-- History tab (previously searched)
-- Custom logo support
-- Mobile optimized
-- Award-winning UI
+INDIC-SETU - PRODUCTION READY HACKATHON VERSION (LOGO FIXED)
+- Main logo above title
+- Bot logo in sidebar and results
+- Proper alignment
+- Award-winning design
 """
 
 import streamlit as st
@@ -17,15 +13,11 @@ import pyttsx3
 from datetime import datetime
 from io import BytesIO
 import base64
-
-# Add this to debug
 import os
-import streamlit as st
-
 
 st.set_page_config(
     page_title="Indic-Setu | सरकारी योजनाएं",
-    page_icon="logo_bot.png.png",  # You can change this emoji or use your logo
+    page_icon="🌾",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -84,7 +76,7 @@ TRANSLATIONS = {
         "detailed_info": "વિગતવાર માહિતી",
         "your_profile": "તમારી પ્રોફાઇલ",
         "next_steps": "આગલા પગલાં",
-        "download": "📄 PDF તરીકે ડાউનલોડ કરો",
+        "download": "📄 PDF તરીકે ડાુનલોડ કરો",
         "listen": "🔊 સાંભળો",
         "favorite": "❤️ પસંદીદા માં શામેલ કરો",
         "requirements": "📋 આવશ્યકતાઓ"
@@ -235,9 +227,18 @@ st.markdown("""
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     }
     
+    .logo-container {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 20px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
     .header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 40px 20px;
+        padding: 20px;
         border-radius: 20px;
         color: white;
         text-align: center;
@@ -246,16 +247,25 @@ st.markdown("""
     }
     
     .header h1 {
-        font-size: 2.5em;
+        font-size: 2.2em;
         margin: 0;
         font-weight: 700;
         letter-spacing: 2px;
     }
     
     .header p {
-        font-size: 1.1em;
+        font-size: 0.95em;
         opacity: 0.95;
-        margin-top: 10px;
+        margin-top: 8px;
+    }
+    
+    .bot-greeting {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 15px;
+        border-radius: 15px;
+        color: white;
+        margin-bottom: 20px;
+        font-weight: 500;
     }
     
     .result-box {
@@ -290,6 +300,16 @@ st.markdown("""
         border-radius: 15px;
         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
+    
+    .sidebar-bot {
+        text-align: center;
+        padding: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        margin-bottom: 20px;
+        color: white;
+        font-weight: bold;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -309,18 +329,23 @@ def t(key):
 # API Configuration
 API_URL = "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"
 
-# Display Main Logo
+# ============================================
+# MAIN LOGO AT TOP
+# ============================================
+st.markdown('<div class="logo-container">', unsafe_allow_html=True)
+
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     try:
-        st.image("public/logo_main.png", width=200)
+        st.image("public/logo_main.png", width=500)
     except:
-        st.write("🌾 Indic-Setu")  # Fallback if logo not found
+        st.markdown("<h2 style='text-align: center;'>🌾 Indic-Setu</h2>", unsafe_allow_html=True)
 
-st.markdown("---")  # Divider line
+st.markdown('</div>', unsafe_allow_html=True)
 
-
-# Language Selector (Top Center)
+# ============================================
+# LANGUAGE SELECTOR
+# ============================================
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     st.session_state.language = st.selectbox(
@@ -330,10 +355,14 @@ with col2:
         key="lang_select"
     )
 
-# Header with Custom Logo Support
+st.markdown("---")
+
+# ============================================
+# HEADER TITLE & SUBTITLE
+# ============================================
 st.markdown(f"""
 <div class="header">
-    <h1>🌾 {t('title')}</h1>
+    <h1>{t('title')}</h1>
     <p>{t('subtitle')}</p>
 </div>
 """, unsafe_allow_html=True)
@@ -342,7 +371,21 @@ st.markdown(f"""
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏠 Search", "❤️ Favorites", "📜 History", "📊 Analytics", "ℹ️ About"])
 
 with tab1:
-    # Sidebar
+    # ============================================
+    # SIDEBAR WITH BOT LOGO
+    # ============================================
+    st.sidebar.markdown('<div class="sidebar-bot">', unsafe_allow_html=True)
+    st.sidebar.markdown("### Welcome to Indic-Setu! 👋")
+    st.sidebar.markdown('</div>', unsafe_allow_html=True)
+    
+    # Bot Logo in Sidebar
+    try:
+        st.sidebar.image("public/logo_bot.png", width=120, caption="🤖 Your Assistant")
+    except:
+        st.sidebar.markdown("### 🤖 Bot Assistant")
+    
+    st.sidebar.markdown("---")
+    
     st.sidebar.title("👤 " + t('your_details'))
     
     occupation = st.sidebar.selectbox(
@@ -362,7 +405,9 @@ with tab1:
     else:
         st.sidebar.warning("⚠️ **Limited Eligibility**")
     
-    # Main Search Area
+    # ============================================
+    # MAIN SEARCH AREA
+    # ============================================
     st.markdown(f"### {t('question')}")
     
     col1, col2, col3 = st.columns([3, 1, 1])
@@ -409,7 +454,9 @@ with tab1:
         - **For AWS AI For Bharat Hackathon 2026**
         """)
     
-    # Search Logic
+    # ============================================
+    # SEARCH LOGIC & RESULTS
+    # ============================================
     if search_btn and query.strip():
         with st.spinner("🔄 Searching..."):
             try:
@@ -449,20 +496,23 @@ with tab1:
                     st.session_state.history.append(search_item)
                     st.session_state.last_response = result
                     
-                    
-                    # Add Bot Logo with greeting
-                    col1, col2, col3 = st.columns([1, 3, 1])
-                    with col3:
+                    # ============================================
+                    # BOT GREETING WITH LOGO
+                    # ============================================
+                    col1, col2 = st.columns([4, 1])
+                    with col2:
                         try:
-                           st.image("public/logo_bot.png", width=100)
+                            st.image("public/logo_bot.png", width=80)
                         except:
                             st.write("🤖")
-
-                    st.markdown("**Your Results:**")
-
-                    # Display Results
+                    
+                    with col1:
+                        st.markdown(f'<div class="bot-greeting">🤖 Found relevant schemes for you!</div>', unsafe_allow_html=True)
+                    
+                    # ============================================
+                    # RESULTS DISPLAY
+                    # ============================================
                     st.markdown(f"### {t('eligibility')}")
-
                     eligibility = result.get('eligibility_status', 'Unknown')
                     
                     if eligibility == 'High-Priority':
@@ -489,7 +539,9 @@ with tab1:
                             except Exception as e:
                                 st.warning(f"⚠️ Audio unavailable: {str(e)}")
                     
-                    # Profile
+                    # ============================================
+                    # USER PROFILE
+                    # ============================================
                     st.markdown(f"### {t('your_profile')}")
                     col1, col2, col3 = st.columns(3)
                     with col1:
@@ -593,14 +645,14 @@ with tab5:
     5. PMSBY (Life Insurance)
     6. PM-Mandhan (Farmer Pension)
     7. Kisan Credit Card (Agricultural Loans)
-    8. Pradhan Mantri Awas Yojana (Housing)
+    8. Pradhan Mandri Awas Yojana (Housing)
     9. Sukanya Samriddhi (Girl Child Savings)
     
     #### 👥 Team:
     Built by passionate developers for rural India
     
     #### 📞 Support:
-    For issues or suggestions: [GitHub Issues](https://github.com/yourrepo/indic-setu)
+    For issues: [GitHub Issues](https://github.com/yourrepo)
     
     © 2026 Indic-Setu | Made with ❤️ for India
     """)
@@ -614,4 +666,3 @@ st.markdown("""
     <p><small>Helping 500M+ Indians discover government schemes they're eligible for</small></p>
 </div>
 """, unsafe_allow_html=True)
-
