@@ -516,20 +516,20 @@ with tab1:
             except Exception as e:
                 st.error(f"⚠️ Error: {str(e)}")
 
-with tab2:
-    # Proper initialization at start
-if 'favorites' not in st.session_state:
-    st.session_state.favorites = []
-
-# Proper saving logic
-if fav_btn:
-    # Check if already exists (avoid duplicates)
-    already_exists = False
-    for fav in st.session_state.favorites:
-        if fav['query'] == query:
-            already_exists = True
-            break
+    with tab2:
+        # Proper initialization at start
+    if 'favorites' not in st.session_state:
+        st.session_state.favorites = []
     
+    # Proper saving logic
+    if fav_btn:
+        # Check if already exists (avoid duplicates)
+        already_exists = False
+        for fav in st.session_state.favorites:
+            if fav['query'] == query:
+                already_exists = True
+                break
+        
     if not already_exists:
         # Add new favorite
         st.session_state.favorites.append({
@@ -619,4 +619,5 @@ st.markdown("""
     <p>© 2026 | AWS AI For Bharat Hackathon | Made with ❤️ for Rural India</p>
 </div>
 """, unsafe_allow_html=True)
+
 
