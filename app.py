@@ -261,9 +261,91 @@ st.session_state.language = st.selectbox(
 # TABS
 tabs = st.tabs(["🔍 Search", "📢 Guide", "📋 Form", "❤️ Favorites", "📊 Compare", "⭐ Stories", "💰 Benefits", "📞 Contacts"])
 
+# ANSWER ENGINE - AI ANSWERS ANY QUESTION
+def answer_question(question, lang):
+    """AI engine to answer any government scheme question"""
+    question_lower = question.lower()
+    
+    # PM-Kisan keywords
+    pm_kisan_keywords = ['pm-kisan', 'kishan', 'kisan', '6000', 'farmer', 'किसान', 'खेडूत', 'кисан', 'விவசாயி', 'రైతు', 'ખેડૂત', 'पीएम-किसान']
+    
+    # MGNREGA keywords  
+    mgnrega_keywords = ['mgnrega', 'manrega', 'rural employment', '100 days', 'work', '210', '300', 'मनरेगा', 'रोजगार', 'काम']
+    
+    # Check which scheme
+    if any(kw in question_lower for kw in pm_kisan_keywords):
+        scheme = "PM-Kisan"
+    elif any(kw in question_lower for kw in mgnrega_keywords):
+        scheme = "MGNREGA"
+    else:
+        return None
+    
+    # Get scheme data
+    scheme_data = SCHEMES[scheme]
+    if lang in scheme_data:
+        data = scheme_data[lang]
+    else:
+        data = scheme_data["English"]
+    
+    # Answer different question types
+    if any(word in question_lower for word in ['how much', 'कितना', 'எவ்வளவு', 'किती', 'કેટલું', 'ఎంత']):
+        return f"**{data['name']}**: {data['how_much']}"
+    
+    elif any(word in question_lower for word in ['eligible', 'who can', 'पात्र', 'தகுதி', 'योग्य', 'પાત્ર', 'అర్హత']):
+        return f"**Eligibility**: {data['eligibility']}"
+    
+    elif any(word in question_lower for word in ['document', 'paper', 'कागज', 'दस्तावेज़', 'ஆவணம்', 'कागद', 'દસ્તાવેજ', 'దస్తావేజు']):
+        return f"**Documents Needed**: {data['documents']}"
+    
+    elif any(word in question_lower for word in ['apply', 'how', 'कैसे', 'എങ്ങനെ', 'आवेदन', 'अर्ज', '申請']):
+        steps_text = "\n".join([f"{i}. {step}" for i, step in enumerate(data['steps'][:4], 1)])
+        return f"**How to Apply**:\n{steps_text}"
+    
+    elif any(word in question_lower for word in ['when', 'कब', 'எப்போது', 'कधी', 'ક્યારે', 'ఎప్పుడు']):
+        return f"**Payment Schedule**: {data['when'] if 'when' in data else 'Check helpline'}"
+    
+    elif any(word in question_lower for word in ['contact', 'call', 'phone', 'फोन', 'ఫోన్', 'कॉल']):
+        return f"**Helpline**: {data['helpline']} | **Website**: {data['website']}"
+    
+    elif any(word in question_lower for word in ['about', 'what', 'क्या', 'എന്ത്', 'काय', 'શું', 'ఏమిటి']):
+        return f"**{data['name']}**\n{data['about']}"
+    
+    else:
+        # Default: show full info
+        return f"""**{data['name']}**
+        
+**About:** {data['about']}
+**Benefit:** {data['benefit']}
+**Amount:** {data['how_much']}
+**Eligibility:** {data['eligibility']}
+**Documents:** {data['documents']}
+**Helpline:** {data['helpline']}"""
+
 # TAB 1: SEARCH
 with tabs[0]:
-    st.markdown("### 🔍 Search Schemes")
+    st.markdown("### 🔍 Search Schemes & Ask Questions")
+    
+    # SEARCH BAR
+    st.markdown("**🔎 Ask Any Question About Government Schemes:**")
+    question = st.text_input(
+        "Type your question (e.g., 'How much money in PM-Kisan?', 'What documents needed?', 'How to apply?')",
+        placeholder="Search for PM-Kisan, MGNREGA, eligibility, documents, payment, etc...",
+        key="search_question"
+    )
+    
+    if question.strip():
+        # Get answer in selected language
+        answer = answer_question(question, st.session_state.language)
+        
+        if answer:
+            st.markdown("<div class='info'>", unsafe_allow_html=True)
+            st.markdown(f"**🤖 Answer:**\n\n{answer}")
+            st.markdown("</div>", unsafe_allow_html=True)
+        else:
+            st.warning("❓ Please ask about PM-Kisan, MGNREGA, or government schemes")
+    
+    st.markdown("---")
+    st.markdown("**📍 Or Click to View Full Scheme Details:**")
     
     cols = st.columns(2)
     for idx, scheme_name in enumerate(["PM-Kisan", "MGNREGA"]):
