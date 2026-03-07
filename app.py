@@ -19,78 +19,167 @@ st.set_page_config(
 # ===== NEW: PDF SCHEMES DATABASE & LOADER =====
 # Extracts all schemes from PDF dynamically
 PDF_SCHEMES_DATABASE = {
-    "International Cooperation": {"description": "MSME business delegations for international exhibitions", "nature": "Financial assistance for international business", "eligibility": "MSME exporters, associations"},
-    "Training Institutions": {"description": "Training support for entrepreneurship", "nature": "Training grants and financial assistance", "eligibility": "Training institutions, ITIs"},
-    "Marketing Assistance": {"description": "Market development support", "nature": "Marketing assistance up to Rs. 2 lakh", "eligibility": "MSMEs, service providers"},
-    "Credit Guarantee": {"description": "Guarantee coverage for MSME loans", "nature": "Credit guarantee up to Rs. 1 crore", "eligibility": "MSMEs with bank loans"},
-    "Credit Linked Capital Subsidy": {"description": "Capital subsidy for technology", "nature": "Up to 15% of project cost", "eligibility": "Manufacturing MSMEs"},
-    "ISO Certification": {"description": "Support for ISO certification", "nature": "Reimbursement of certification cost", "eligibility": "Any MSME"},
-    "Enterprise Cluster": {"description": "Development of enterprise clusters", "nature": "Cluster development support", "eligibility": "Groups of enterprises"},
-    "Micro Finance": {"description": "Credit for micro enterprises", "nature": "Small loans for microenterprises", "eligibility": "Micro enterprises, SHGs"},
-    "MSME Market Development": {"description": "Market development for MSMEs", "nature": "Marketing support and trade fairs", "eligibility": "All MSMEs"},
-    "National Awards": {"description": "Awards for outstanding MSMEs", "nature": "Recognition and awards", "eligibility": "Individual MSEs"},
-    "Raw Material Assistance": {"description": "Support for raw material", "nature": "Financial assistance for materials", "eligibility": "Manufacturing MSMEs"},
-    "Bill Discounting": {"description": "Quick credit against bills", "nature": "Discounting of bills", "eligibility": "MSMEs with purchase orders"},
-    "PMEGP": {"description": "Employment generation through enterprises", "nature": "Subsidy 15-25% on project cost", "eligibility": "Age 18+, education 8th pass"},
-    "SFURTI": {"description": "Support for traditional industries", "nature": "Cluster development up to Rs. 3 crore", "eligibility": "Artisans, traditional industry groups"},
-    "Technology Upgradation Fund": {"description": "Scheme for equipment modernization", "nature": "50-70% subsidy/loan", "eligibility": "Small and medium enterprises"},
-    "Mudra Loan": {"description": "Loans for business and self-employment", "nature": "Up to Rs. 10 lakh without collateral", "eligibility": "Entrepreneurs, self-employed"},
-    "Business Development Services": {"description": "Consulting and advisory services", "nature": "Subsidy for professional services", "eligibility": "MSMEs"},
-    "Skill Development": {"description": "Employee skill training programs", "nature": "Training cost reimbursement", "eligibility": "All MSMEs"},
-    "Infrastructure Development": {"description": "Workshop and factory setup", "nature": "Capital subsidy for infrastructure", "eligibility": "New MSMEs"},
-    "Lean Manufacturing": {"description": "Manufacturing efficiency improvement", "nature": "Consultant subsidy", "eligibility": "Manufacturing MSMEs"},
+    "International Cooperation": {
+        "English": {"description": "MSME business delegations for international exhibitions", "nature": "Financial assistance for international business", "eligibility": "MSME exporters, associations"},
+        "హిందీ": {"description": "अंतर्राष्ट्रीय व्यापार के लिए वित्तीय सहायता", "nature": "MSME निर्यातकों के लिए सहायता", "eligibility": "व्यापारिक प्रतिनिधिमंडल"},
+        "తెలుగు": {"description": "అంతర్జాతీయ ప్రదర్శనుల కోసం MSME వ్యాపార ప్రతिनిధిత్వ", "nature": "అంతర్జాతీయ ఆర్థిక సహాయం", "eligibility": "MSME ఎగుమతిదారులు, సంస్థలు"},
+    },
+    "Training Institutions": {
+        "English": {"description": "Training support for entrepreneurship", "nature": "Training grants and financial assistance", "eligibility": "Training institutions, ITIs"},
+        "హిందీ": {"description": "उद्यमिता के लिए प्रशिक्षण सहायता", "nature": "प्रशिक्षण अनुदान और वित्तीय सहायता", "eligibility": "प्रशिक्षण संस्थान, ITI"},
+        "తెలుగు": {"description": "వ్యవసాయకర్మకు శిక్షణ సహాయం", "nature": "శిక్షణ ఆనুకూల్యం మరియు ఆర్థిక సహాయం", "eligibility": "శిక్షణ సంస్థలు, ITI"},
+    },
+    "Marketing Assistance": {
+        "English": {"description": "Market development support", "nature": "Marketing assistance up to Rs. 2 lakh", "eligibility": "MSMEs, service providers"},
+        "హిందీ": {"description": "बाजार विकास सहायता", "nature": "विपणन सहायता 2 लाख तक", "eligibility": "MSME, सेवा प्रदाता"},
+        "తెలుగు": {"description": "మార్కెట్ అభివృద్ధి సహాయం", "nature": "విపణన సహాయం 2 లక్షల వరకు", "eligibility": "MSME, సేవా ప్రదాతలు"},
+    },
+    "Credit Guarantee": {
+        "English": {"description": "Guarantee coverage for MSME loans", "nature": "Credit guarantee up to Rs. 1 crore", "eligibility": "MSMEs with bank loans"},
+        "హిందీ": {"description": "MSME ऋण के लिए गारंटी कवरेज", "nature": "1 करोड़ तक ऋण गारंटी", "eligibility": "बैंक ऋण वाले MSME"},
+        "తెలుగు": {"description": "MSME రుణాల కోసం గ్యారంటీ కవరేజ్", "nature": "1 కోటి వరకు ఋణ గ్యారంటీ", "eligibility": "బ్యాంక్ రుణాలు కలిగిన MSME"},
+    },
+    "Credit Linked Capital Subsidy": {
+        "English": {"description": "Capital subsidy for technology", "nature": "Up to 15% of project cost", "eligibility": "Manufacturing MSMEs"},
+        "హిందీ": {"description": "तकनीक के लिए पूंजी अनुदान", "nature": "परियोजना लागत का 15% तक", "eligibility": "निर्माण MSME"},
+        "తెలుగు": {"description": "సాంకేతికత కోసం పూంజి ఆనుకూల్యం", "nature": "ప్రాజెక్టు ఖర్చులో 15% వరకు", "eligibility": "ఉత్పాదక MSME"},
+    },
+    "ISO Certification": {
+        "English": {"description": "Support for ISO certification", "nature": "Reimbursement of certification cost", "eligibility": "Any MSME"},
+        "హిందీ": {"description": "ISO प्रमाणन के लिए समर्थन", "nature": "प्रमाणन लागत की प्रतिपूर्ति", "eligibility": "कोई भी MSME"},
+        "తెలుగు": {"description": "ISO సర్టిఫికేషన్ కోసం సపోర్ట్", "nature": "సర్టిఫికేషన్ ఖర్చు నిరిక్ష", "eligibility": "ఏదైనా MSME"},
+    },
+    "Enterprise Cluster": {
+        "English": {"description": "Development of enterprise clusters", "nature": "Cluster development support", "eligibility": "Groups of enterprises"},
+        "హిందీ": {"description": "उद्यम समूहों का विकास", "nature": "समूह विकास सहायता", "eligibility": "उद्यमों के समूह"},
+        "తెలుగు": {"description": "ఎంటర్‌ప్రైజ్ క్లస్టర్‌ల అభివృద్ధి", "nature": "క్లస్టర్ అభివృద్ధి సహాయం", "eligibility": "ఎంటర్‌ప్రైజ్ సమూహాలు"},
+    },
+    "Micro Finance": {
+        "English": {"description": "Credit for micro enterprises", "nature": "Small loans for microenterprises", "eligibility": "Micro enterprises, SHGs"},
+        "హిందీ": {"description": "सूक्ष्म उद्यमों के लिए क्रेडिट", "nature": "सूक्ष्म उद्यमों के लिए छोटे ऋण", "eligibility": "सूक्ष्म उद्यम, SHG"},
+        "తెలుగు": {"description": "మైక్రో ఎంటర్‌ప్రైజ్‌ల కోసం క్రెడిట్", "nature": "సూక్ష్మమైన ఎంటర్‌ప్రైజ్‌ల కోసం చిన్న రుణాలు", "eligibility": "సూక్ష్మమైన ఎంటర్‌ప్రైజ్‌లు, SHG"},
+    },
+    "MSME Market Development": {
+        "English": {"description": "Market development for MSMEs", "nature": "Marketing support and trade fairs", "eligibility": "All MSMEs"},
+        "హిందీ": {"description": "MSME के लिए बाजार विकास", "nature": "विपणन सहायता और व्यापार मेले", "eligibility": "सभी MSME"},
+        "తెలుగు": {"description": "MSME కోసం మార్కెట్ అభివృద్ధి", "nature": "విపణన సహాయం మరియు వాణిజ్య విపర్లు", "eligibility": "సభी MSME"},
+    },
+    "National Awards": {
+        "English": {"description": "Awards for outstanding MSMEs", "nature": "Recognition and awards", "eligibility": "Individual MSEs"},
+        "హిందీ": {"description": "उत्कृष्ट MSME के लिए पुरस्कार", "nature": "मान्यता और पुरस्कार", "eligibility": "व्यक्तिगत MSE"},
+        "తెలుగు": {"description": "అసాధారణ MSME ల కోసం పురస్కారాలు", "nature": "గుర్తింపు మరియు పురస్కారాలు", "eligibility": "వ్యక్తిగత MSE"},
+    },
+    "Raw Material Assistance": {
+        "English": {"description": "Support for raw material", "nature": "Financial assistance for materials", "eligibility": "Manufacturing MSMEs"},
+        "హిందీ": {"description": "कच्चे माल के लिए समर्थन", "nature": "सामग्री के लिए वित्तीय सहायता", "eligibility": "निर्माण MSME"},
+        "తెలుగు": {"description": "ముడి పదార్థం కోసం సపోర్ట్", "nature": "పదార్థాల కోసం ఆర్థిక సహాయం", "eligibility": "ఉత్పాదక MSME"},
+    },
+    "Bill Discounting": {
+        "English": {"description": "Quick credit against bills", "nature": "Discounting of bills", "eligibility": "MSMEs with purchase orders"},
+        "హిందీ": {"description": "बিलों के विरुद्ध तेजी से क्रेडिट", "nature": "बिलों की छूट", "eligibility": "खरीद आदेश वाले MSME"},
+        "తెలుగు": {"description": "బిల్‌ల కంటే వేగవంతమైన క్రెడిట్", "nature": "బిల్‌ల డిస్‌కౌంటింగ్", "eligibility": "ఆర్డర్‌లను కొనుక్కోవటానికి MSME"},
+    },
+    "PMEGP": {
+        "English": {"description": "Employment generation through enterprises", "nature": "Subsidy 15-25% on project cost", "eligibility": "Age 18+, education 8th pass"},
+        "హిందీ": {"description": "उद्यमों के माध्यम से रोजगार सृजन", "nature": "परियोजना लागत पर 15-25% अनुदान", "eligibility": "18+ उम्र, 8वीं पास शिक्षा"},
+        "తెలుగు": {"description": "ఎంటర్‌ప్రైజ్‌ల ద్వారా ఉపాధి సృష్టి", "nature": "ప్రాజెక్టు ఖర్చుపై 15-25% ఆనుకూల్యం", "eligibility": "18+ వయస్సు, 8వ తరగతి పాస్"},
+    },
+    "SFURTI": {
+        "English": {"description": "Support for traditional industries", "nature": "Cluster development up to Rs. 3 crore", "eligibility": "Artisans, traditional industry groups"},
+        "హిందీ": {"description": "पारंपरिक उद्योगों के लिए समर्थन", "nature": "3 करोड़ तक समूह विकास", "eligibility": "कारीगर, पारंपरिक उद्योग समूह"},
+        "తెలుగు": {"description": "సాంప్రదాయిక పరిశ్రమల కోసం సపోర్ట్", "nature": "3 కోటి వరకు క్లస్టర్ అభివృద్ధి", "eligibility": "కారిగరులు, సాంప్రదాయిక పరిశ్రమ సమూహాలు"},
+    },
+    "Technology Upgradation Fund": {
+        "English": {"description": "Scheme for equipment modernization", "nature": "50-70% subsidy/loan", "eligibility": "Small and medium enterprises"},
+        "హిందీ": {"description": "उपकरण आधुनिकीकरण के लिए योजना", "nature": "50-70% अनुदान/ऋण", "eligibility": "छोटे और मध्यम उद्यम"},
+        "తెలుగు": {"description": "సరঞ్జాము ఆధునికీకరణ కోసం స్కీమ్", "nature": "50-70% ఆనుకూల్యం/రుణం", "eligibility": "చిన్న మరియు మధ్యम ఎంటర్‌ప్రైజ్‌లు"},
+    },
+    "Mudra Loan": {
+        "English": {"description": "Loans for business and self-employment", "nature": "Up to Rs. 10 lakh without collateral", "eligibility": "Entrepreneurs, self-employed"},
+        "హిందీ": {"description": "व्यवसाय और स्व-रोजगार के लिए ऋण", "nature": "बिना गिरवी के 10 लाख तक", "eligibility": "उद्यमी, स्व-नियोजित"},
+        "తెలుగు": {"description": "ఆర్థిక మరియు స్వీయ-ఉపాధి కోసం రుణాలు", "nature": "సంపద లేకుండా 10 లక్షల వరకు", "eligibility": "ఎంటర్‌ప్రెన్యూర్‌లు, స్వీయ-నియుక్త"},
+    },
+    "Business Development Services": {
+        "English": {"description": "Consulting and advisory services", "nature": "Subsidy for professional services", "eligibility": "MSMEs"},
+        "హిందీ": {"description": "परामर्श और सलाह सेवाएं", "nature": "व्यावसायिक सेवाओं के लिए अनुदान", "eligibility": "MSME"},
+        "తెలుగు": {"description": "సలహా మరియు సలహా సేవలు", "nature": "వృత్తిపరమైన సేవల కోసం ఆనుకూల్యం", "eligibility": "MSME"},
+    },
+    "Skill Development": {
+        "English": {"description": "Employee skill training programs", "nature": "Training cost reimbursement", "eligibility": "All MSMEs"},
+        "హిందీ": {"description": "कर्मचारी कौशल प्रशिक्षण कार्यक्रम", "nature": "प्रशिक्षण लागत की प्रतिपूर्ति", "eligibility": "सभी MSME"},
+        "తెలుగు": {"description": "कర్మचారి నైపుణ్య శిక్షణ కార్యక్రమాలు", "nature": "శిక్షణ ఖర్చు నిరిక్ష", "eligibility": "సభి MSME"},
+    },
+    "Infrastructure Development": {
+        "English": {"description": "Workshop and factory setup", "nature": "Capital subsidy for infrastructure", "eligibility": "New MSMEs"},
+        "హిందీ": {"description": "कार्यशाला और कारखाने की स्थापना", "nature": "अवसंरचना के लिए पूंजी अनुदान", "eligibility": "नए MSME"},
+        "తెలుగు": {"description": "వర్కషాప్ మరియు ఫ్యాక్టరీ సెటప్", "nature": "అవస్థానార్థం కోసం పూంజి ఆనుకూల్యం", "eligibility": "నవీన MSME"},
+    },
+    "Lean Manufacturing": {
+        "English": {"description": "Manufacturing efficiency improvement", "nature": "Consultant subsidy", "eligibility": "Manufacturing MSMEs"},
+        "హిందీ": {"description": "विनिर्माण दक्षता सुधार", "nature": "सलाहकार अनुदान", "eligibility": "विनिर्माण MSME"},
+        "తెలుగు": {"description": "ఉత్పాదక సామర్థ్య మెరుపు", "nature": "సలహాదారు ఆనుకూల్యం", "eligibility": "ఉత్పాదక MSME"},
+    },
 }
 
 def get_pdf_scheme_answer(question, selected_language):
     """Search PDF schemes and return translated answer"""
     question_lower = question.lower()
     
-    # Translate response based on selected language
-    translations = {
-        "हिंदी": {
-            "description": "विवरण",
-            "nature": "प्रकृति",
-            "eligibility": "पात्रता",
-            "helpline": "हेल्पलाइन"
-        },
-        "తెలుగు": {
-            "description": "వివరణ",
-            "nature": "స్వభావం",
-            "eligibility": "అర్హత",
-            "helpline": "హెల్‌లైన్"
-        },
-        "தமிழ்": {
-            "description": "விளக்கம்",
-            "nature": "தன்மை",
-            "eligibility": "தகுதி",
-            "helpline": "ஹெல்பலைன்"
-        }
-    }
-    
     # Find matching scheme
     for scheme_name, scheme_data in PDF_SCHEMES_DATABASE.items():
         if scheme_name.lower() in question_lower or any(word in question_lower for word in scheme_name.lower().split()):
-            # Build response in selected language
-            if selected_language in translations:
-                trans = translations[selected_language]
-                response = f"""**{scheme_name}**
-
-**{trans['description']}:** {scheme_data['description']}
-
-**{trans['nature']}:** {scheme_data['nature']}
-
-**{trans['eligibility']}:** {scheme_data['eligibility']}
-
-**{trans['helpline']}:** 1800-180-6763
-🌐 वेबसाइट: https://msme.gov.in"""
+            
+            # Get language data
+            if selected_language in scheme_data:
+                data = scheme_data[selected_language]
             else:
+                data = scheme_data["English"]
+            
+            # Build response in selected language
+            if selected_language == "హిందీ":
                 response = f"""**{scheme_name}**
 
-**Description:** {scheme_data['description']}
+**विवरण:** {data['description']}
 
-**Nature of Assistance:** {scheme_data['nature']}
+**प्रकृति:** {data['nature']}
 
-**Eligibility:** {scheme_data['eligibility']}
+**पात्रता:** {data['eligibility']}
+
+**हेल्पलाइन:** 1800-180-6763
+🌐 वेबसाइट: https://msme.gov.in"""
+            
+            elif selected_language == "తెలుగు":
+                response = f"""**{scheme_name}**
+
+**విధానం:** {data['description']}
+
+**స్వభావం:** {data['nature']}
+
+**అర్హత:** {data['eligibility']}
+
+**హెల్‌లైన్:** 1800-180-6763
+🌐 వెబ్‌సైట్: https://msme.gov.in"""
+            
+            elif selected_language == "தமிழ்":
+                response = f"""**{scheme_name}**
+
+**விளக்கம்:** {data['description']}
+
+**தன்மை:** {data['nature']}
+
+**தகுதி:** {data['eligibility']}
+
+**ஹெல்பலைன்:** 1800-180-6763
+🌐 வெப்சைட்: https://msme.gov.in"""
+            
+            else:  # English
+                response = f"""**{scheme_name}**
+
+**Description:** {data['description']}
+
+**Nature of Assistance:** {data['nature']}
+
+**Eligibility:** {data['eligibility']}
 
 **Helpline:** 1800-180-6763
 🌐 Website: https://msme.gov.in"""
@@ -100,6 +189,7 @@ def get_pdf_scheme_answer(question, selected_language):
     return None
 
 # ===== END: PDF SCHEMES DATABASE & LOADER =====
+
 
 
 
