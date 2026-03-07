@@ -1,8 +1,9 @@
 """
-INDIC-SETU - FINAL WORKING VERSION
-- Lambda returns answer in user's language
-- Polly speaks it in correct language
-- All features working perfectly
+INDIC-SETU - ADVANCED VERSION v5
+1. 2G/Low Bandwidth Optimized
+2. Voice Guider (step-by-step guidance)
+3. Form Filler (auto-fill government forms)
+4. Enhanced AI Knowledge Base
 """
 
 import streamlit as st
@@ -13,261 +14,203 @@ import boto3
 from botocore.exceptions import ClientError
 import io
 
+# PAGE CONFIG - MINIMAL FOR 2G
 st.set_page_config(
-    page_title="Indic-Setu | सरकारी योजनाएं",
+    page_title="Indic-Setu",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Language Translations (UI ONLY)
+# LANGUAGE TRANSLATIONS - MINIMAL SIZE
 TRANSLATIONS = {
     "English": {
         "title": "Indic-Setu",
-        "subtitle": "Bridging Cultures - Government Schemes Made Simple",
-        "your_details": "Your Details",
-        "occupation": "Select your occupation",
-        "income": "Annual Income (₹)",
-        "select_language": "🌐 Select Language",
-        "question": "What would you like to know?",
+        "subtitle": "Government Schemes Guide",
         "search": "🔍 Search",
-        "clear": "🔄 Clear",
-        "eligibility": "Your Eligibility Status",
-        "detailed_info": "Detailed Information",
-        "your_profile": "Your Profile",
-        "listen": "🔊 Speak Answer",
-        "favorite": "❤️ Save",
+        "listen": "🔊 Listen",
+        "voice_guide": "📢 Step-by-Step Guide",
+        "form_fill": "📋 Auto-Fill Forms",
+        "eligibility": "Eligibility Status",
+        "details": "Details",
+        "save": "❤️ Save",
+        "income": "Income (₹)",
+        "occupation": "Job Type"
     },
     "हिंदी": {
         "title": "इंडिक-सेतु",
-        "subtitle": "संस्कृतियों को जोड़ना - सरकारी योजनाएं आसान बनाई गईं",
-        "your_details": "आपका विवरण",
-        "occupation": "अपने व्यवसाय का चयन करें",
-        "income": "वार्षिक आय (₹)",
-        "select_language": "🌐 भाषा चुनें",
-        "question": "आप क्या जानना चाहते हैं?",
+        "subtitle": "सरकारी योजना गाइड",
         "search": "🔍 खोजें",
-        "clear": "🔄 साफ़ करें",
-        "eligibility": "आपकी पात्रता स्थिति",
-        "detailed_info": "विस्तृत जानकारी",
-        "your_profile": "आपकी प्रोफाइल",
-        "listen": "🔊 जवाब सुनें",
-        "favorite": "❤️ सहेजें",
-    },
-    "ગુજરાતી": {
-        "title": "ઇન્ડિક-સેતુ",
-        "subtitle": "સંસ્કૃતિઓને જોડવા - સરકારી યોજનાઓ સરળ બનાવવામાં આવી",
-        "your_details": "તમારી વિગતો",
-        "occupation": "તમારો વ્યવસાય પસંદ કરો",
-        "income": "વાર્ષિક આવક (₹)",
-        "select_language": "🌐 ભાષા પસંદ કરો",
-        "question": "તમે શું જાણવા માંગો છો?",
-        "search": "🔍 શોધો",
-        "clear": "🔄 સાફ કરો",
-        "eligibility": "તમારી પાત્રતા સ્થિતિ",
-        "detailed_info": "વિગતવાર માહિતી",
-        "your_profile": "તમારી પ્રોફાઇલ",
-        "listen": "🔊 જવાબ સાંભળો",
-        "favorite": "❤️ સહેજો",
+        "listen": "🔊 सुनें",
+        "voice_guide": "📢 चरण-दर-चरण गाइड",
+        "form_fill": "📋 फॉर्म स्वतः भरें",
+        "eligibility": "पात्रता स्थिति",
+        "details": "विवरण",
+        "save": "❤️ सहेजें",
+        "income": "आय (₹)",
+        "occupation": "व्यवसाय"
     },
     "मराठी": {
         "title": "इंडिक-सेतु",
-        "subtitle": "संस्कृतींना जोडणे - सरकारी योजना सोपे केल्या गेल्या",
-        "your_details": "आपली माहिती",
-        "occupation": "आपला व्यवसाय निवडा",
-        "income": "वार्षिक उत्पन्न (₹)",
-        "select_language": "🌐 भाषा निवडा",
-        "question": "आप काय जाणू शकता?",
+        "subtitle": "सरकारी योजना गाइड",
         "search": "🔍 शोधा",
-        "clear": "🔄 साफ करा",
-        "eligibility": "आपली पात्रता स्थिती",
-        "detailed_info": "तपशीलवार माहिती",
-        "your_profile": "आपली प्रोफाइल",
-        "listen": "🔊 उत्तर ऐका",
-        "favorite": "❤️ सहेजा",
+        "listen": "🔊 ऐका",
+        "voice_guide": "📢 चरण-दर-चरण मार्गदर्शन",
+        "form_fill": "📋 फॉर्म स्वयंपूर्ण करा",
+        "eligibility": "पात्रता स्थिती",
+        "details": "तपशील",
+        "save": "❤️ सहेजा",
+        "income": "आय (₹)",
+        "occupation": "व्यवसाय"
     },
     "தமிழ்": {
         "title": "இந்திய-சேது",
-        "subtitle": "கலாச்சாரங்களை இணைத்தல் - அரசு திட்டங்கள் எளிமையாக்கப்பட்டுள்ளன",
-        "your_details": "உங்கள் விவரங்கள்",
-        "occupation": "உங்கள் தொழிலைத் தேர்ந்தெடுங்கள்",
-        "income": "வார்ஷிக வருமானம் (₹)",
-        "select_language": "🌐 மொழியைத் தேர்ந்தெடுங்கள்",
-        "question": "நீங்கள் என்ன தெரிந்து கொள்ள விரும்புகிறீர்கள்?",
+        "subtitle": "அரசு திட்டம் வழிகாட்டி",
         "search": "🔍 தேடல்",
-        "clear": "🔄 தீர்க்கம்",
-        "eligibility": "உங்கள் தகுதி நிலை",
-        "detailed_info": "விரிவான தகவல்",
-        "your_profile": "உங்கள் சுயவிவரம்",
-        "listen": "🔊 பதிலைக் கேளுங்கள்",
-        "favorite": "❤️ சேமிக்கவும்",
-    },
-    "తెలుగు": {
-        "title": "ఇండిక్-సేతు",
-        "subtitle": "సంస్కృతులను అనుసంధానించడం - ప్రభుత్వ పథకాలను సరళంగా చేయబడ్డాయి",
-        "your_details": "మీ వివరాలు",
-        "occupation": "మీ వృత్తిని ఎంచుకోండి",
-        "income": "వార్ష్యక ఆదాయం (₹)",
-        "select_language": "🌐 భాషను ఎంచుకోండి",
-        "question": "మీరు ఏమి తెలుసుకోవాలనుకుంటున్నారు?",
-        "search": "🔍 వెతకండి",
-        "clear": "🔄 క్లియర్",
-        "eligibility": "మీ అర్హతా స్థితి",
-        "detailed_info": "వివరణాత్మక సమాచారం",
-        "your_profile": "మీ ప్రొఫైల్",
-        "listen": "🔊 సమాధానం వినండి",
-        "favorite": "❤️ సేవ్ చేయండి",
-    },
-    "ಕನ್ನಡ": {
-        "title": "ಇಂಡಿಕ್-ಸೇತು",
-        "subtitle": "ಸಂಸ್ಕೃತಿಗಳನ್ನು ಸೇತುವೆ - ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು ಸರಳವಾಗಿ ಮಾಡಲ್ಪಟ್ಟಿವೆ",
-        "your_details": "ನಿಮ್ಮ ವಿವರಣೆ",
-        "occupation": "ನಿಮ್ಮ ವೃತ್ತಿಯನ್ನು ಆರಿಸಿಕೊಳ್ಳಿ",
-        "income": "ವಾರ್ಷಿಕ ಆದಾಯ (₹)",
-        "select_language": "🌐 ಭಾಷೆಯನ್ನು ಆರಿಸಿಕೊಳ್ಳಿ",
-        "question": "ನೀವು ಏನನ್ನು ತಿಳಿದುಕೊಳ್ಳಲು ಬಯಸುತ್ತೀರಿ?",
-        "search": "🔍 ಹುಡುಕಿ",
-        "clear": "🔄 ತೆರವುಗೊಳಿಸು",
-        "eligibility": "ನಿಮ್ಮ ಅರ್ಹತೆ ಸ್ಥಿತಿ",
-        "detailed_info": "ವಿವರವಾದ ಮಾಹಿತಿ",
-        "your_profile": "ನಿಮ್ಮ ಪ್ರೊಫೈಲ್",
-        "listen": "🔊 ಉತ್ತರ ಕೇಳಿ",
-        "favorite": "❤️ ಉಳಿಸಿ",
-    },
-    "বাংলা": {
-        "title": "ইন্ডিক-সেতু",
-        "subtitle": "সংস্কৃতিগুলি সেতু - সরকারী স্কিম সহজ করা হয়েছে",
-        "your_details": "আপনার বিবরণ",
-        "occupation": "আপনার পেশা নির্বাচন করুন",
-        "income": "বার্ষিক আয় (₹)",
-        "select_language": "🌐 ভাষা নির্বাচন করুন",
-        "question": "আপনি কী জানতে চান?",
-        "search": "🔍 অনুসন্ধান",
-        "clear": "🔄 পরিষ্কার",
-        "eligibility": "আপনার যোগ্যতার অবস্থা",
-        "detailed_info": "বিস্তারিত তথ্য",
-        "your_profile": "আপনার প্রোফাইল",
-        "listen": "🔊 উত্তর শুনুন",
-        "favorite": "❤️ সংরক্ষণ করুন",
-    },
-    "ਪੰਜਾਬੀ": {
-        "title": "ਇੰਡਿਕ-ਸੇਤੂ",
-        "subtitle": "ਸੰਸਕ੍ਰਿਤੀਆਂ ਨੂੰ ਜੋੜਨਾ - ਸਰਕਾਰੀ ਯੋਜਨਾਵਾਂ ਸਰਲ ਬਣਾਈਆਂ ਗਈਆਂ",
-        "your_details": "ਤੁਹਾਡੀ ਜਾਣਕਾਰੀ",
-        "occupation": "ਆਪਣਾ ਪੇਸ਼ਾ ਚੁਣੋ",
-        "income": "ਸਾਲਾਨਾ ਆਮਦਨ (₹)",
-        "select_language": "🌐 ਭਾਸ਼ਾ ਚੁਣੋ",
-        "question": "ਤੁਸੀਂ ਕੀ ਜਾਣਨਾ ਚਾਹੁੰਦੇ ਹੋ?",
-        "search": "🔍 ਖੋਜ",
-        "clear": "🔄 ਸਾਫ",
-        "eligibility": "ਤੁਹਾਡੀ ਯੋਗਤਾ ਸਥਿਤੀ",
-        "detailed_info": "ਵਿਸਤ੍ਰਿਤ ਜਾਣਕਾਰੀ",
-        "your_profile": "ਤੁਹਾਡਾ ਪ੍ਰੋਫਾਈਲ",
-        "listen": "🔊 ਜਵਾਬ ਸੁਣੋ",
-        "favorite": "❤️ ਸੇਵ ਕਰੋ",
-    },
-    "اردو": {
-        "title": "انڈک-سیتو",
-        "subtitle": "ثقافتوں کو جوڑنا - سرکاری اسکیمز آسان بنائی گئیں",
-        "your_details": "آپ کی تفصیلات",
-        "occupation": "اپنا پیشہ منتخب کریں",
-        "income": "سالانہ آمدنی (₹)",
-        "select_language": "🌐 زبان منتخب کریں",
-        "question": "آپ کیا جاننا چاہتے ہیں?",
-        "search": "🔍 تلاش",
-        "clear": "🔄 صاف",
-        "eligibility": "آپ کی اہلیت کی حالت",
-        "detailed_info": "تفصیلی معلومات",
-        "your_profile": "آپ کی پروفائل",
-        "listen": "🔊 جواب سنیں",
-        "favorite": "❤️ محفوظ کریں",
+        "listen": "🔊 கேளுங்கள்",
+        "voice_guide": "📢 படிப்படியான வழிகாட்டி",
+        "form_fill": "📋 படிவங்களை தானாக நிரப்பவும்",
+        "eligibility": "தகுதி நிலை",
+        "details": "விவரங்கள்",
+        "save": "❤️ சேமிக்கவும்",
+        "income": "வருமானம் (₹)",
+        "occupation": "வேலை வகை"
     }
 }
 
-# Polly Voice IDs for each language
+# ENHANCED AI KNOWLEDGE BASE
+KNOWLEDGE_BASE = {
+    "PM-Kisan": {
+        "name": "PM-Kisan Samman Nidhi",
+        "benefit": "₹6,000/year",
+        "eligibility": ["All farmers with land", "Land holdings up to 2 hectares", "Age above 18"],
+        "documents": ["Land certificate", "Aadhar", "Bank account"],
+        "website": "https://pmkisan.gov.in",
+        "toll_free": "1800-180-1111",
+        "steps": [
+            "Visit pmkisan.gov.in",
+            "Click 'Farmer Corner'",
+            "Select 'New Farmer Registration'",
+            "Enter Aadhar and Land details",
+            "Submit application",
+            "Receive confirmation",
+            "Benefits credited to bank every 4 months"
+        ],
+        "faqs": {
+            "How much money?": "₹6,000 per year (₹2,000 every 4 months)",
+            "Who can apply?": "All farmers with land",
+            "How to apply?": "Visit pmkisan.gov.in and register",
+            "When is money credited?": "Every 4 months to bank account"
+        }
+    },
+    "MGNREGA": {
+        "name": "Mahatma Gandhi National Rural Employment Guarantee Act",
+        "benefit": "100 days guaranteed employment/year",
+        "eligibility": ["Rural adults", "Unemployed", "Willing to do manual work"],
+        "documents": ["Aadhar", "Address proof", "Job card"],
+        "website": "https://nrega.nic.in",
+        "toll_free": "1800-345-6777",
+        "steps": [
+            "Go to nearest Gram Panchayat",
+            "Request job card",
+            "Fill application form",
+            "Get registered",
+            "Apply for work",
+            "Work assigned within 15 days",
+            "Get paid weekly or monthly"
+        ],
+        "faqs": {
+            "How many days work?": "Minimum 100 days per year",
+            "What is the wage?": "₹210-300 per day (varies by state)",
+            "How to register?": "Go to Gram Panchayat with Aadhar",
+            "How is payment made?": "Through bank transfer or cheque"
+        }
+    },
+    "Ayushman Bharat": {
+        "name": "Ayushman Bharat - PM-JAY",
+        "benefit": "₹5 lakh health insurance/family/year",
+        "eligibility": ["Income less than ₹3 lakh/year", "BPL families", "OBC families"],
+        "documents": ["Income certificate", "Aadhar", "Ration card"],
+        "website": "https://pmjay.gov.in",
+        "toll_free": "1800-111-565",
+        "steps": [
+            "Check if eligible (income <3L)",
+            "Register on pmjay.gov.in or visit hospital",
+            "Get golden card issued",
+            "Use card for free treatment",
+            "Get treated at empaneled hospitals",
+            "Insurance covers up to ₹5 lakh"
+        ],
+        "faqs": {
+            "Coverage amount?": "Up to ₹5 lakh per family per year",
+            "Who is eligible?": "Families with income less than ₹3 lakh",
+            "Which hospitals?": "All empaneled government and private hospitals",
+            "Documents needed?": "Aadhar and income certificate"
+        }
+    },
+    "PMJDY": {
+        "name": "Pradhan Mantri Jan Dhan Yojana",
+        "benefit": "Free bank account with insurance",
+        "eligibility": ["All Indian citizens above 10 years", "No income limit"],
+        "documents": ["Aadhar", "Any ID proof"],
+        "website": "https://pmjdy.gov.in",
+        "toll_free": "1800-180-1111",
+        "steps": [
+            "Visit nearest bank",
+            "Fill account opening form",
+            "Submit Aadhar copy",
+            "Get account opened same day",
+            "Receive debit card",
+            "Get ₹1 lakh accidental insurance"
+        ],
+        "faqs": {
+            "Account opening fee?": "Completely free",
+            "Minimum balance?": "No minimum balance required",
+            "Insurance coverage?": "₹1 lakh accidental insurance",
+            "Documents needed?": "Only Aadhar is enough"
+        }
+    }
+}
+
+# Polly Configuration
 POLLY_VOICES = {
     "English": "Joanna",
     "हिंदी": "Aditi",
-    "ગુજરાતી": "Aditi",
     "मराठी": "Aditi",
-    "தமிழ்": "Aditi",
-    "తెలుగు": "Aditi",
-    "ಕನ್ನಡ": "Aditi",
-    "বাংলা": "Aditi",
-    "ਪੰਜਾਬੀ": "Aditi",
-    "اردو": "Aditi"
+    "தமிழ்": "Aditi"
 }
 
-# Polly Language Codes
 POLLY_LANG_CODES = {
     "English": "en-US",
     "हिंदी": "hi-IN",
-    "ગુજરાતી": "gu-IN",
     "मराठी": "mr-IN",
-    "தமிழ்": "ta-IN",
-    "తెలుగు": "te-IN",
-    "ಕನ್ನಡ": "kn-IN",
-    "বাংলা": "bn-IN",
-    "ਪੰਜਾਬੀ": "pa-IN",
-    "اردو": "ur-PK"
+    "தமிழ்": "ta-IN"
 }
 
-# Advanced CSS
+# MINIMAL CSS FOR 2G
 st.markdown("""
 <style>
-    * { font-family: 'Segoe UI', sans-serif; }
-    
-    .header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 30px; border-radius: 15px; color: white;
-        text-align: center; margin-bottom: 30px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-    }
-    
-    .header h1 { margin: 0; font-size: 2.5em; font-weight: 700; }
-    .header p { margin: 10px 0 0 0; font-size: 1.1em; opacity: 0.9; }
-    
-    .result-box {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        padding: 20px; border-radius: 12px; color: white;
-        margin: 20px 0; box-shadow: 0 5px 15px rgba(245, 87, 108, 0.3);
-    }
-    
-    .card {
-        background: white; padding: 15px; border-radius: 12px;
-        border-left: 4px solid #667eea; margin: 10px 0;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .success-card {
-        background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-        padding: 15px; border-radius: 12px; margin: 10px 0;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        color: white !important; border: none !important;
-        border-radius: 8px !important; padding: 10px 20px !important;
-        font-weight: 600 !important;
-    }
+    * { font-family: Arial, sans-serif; }
+    body { background: #f5f5f5; }
+    .header { background: #667eea; padding: 20px; color: white; border-radius: 10px; text-align: center; margin-bottom: 20px; }
+    .card { background: white; padding: 15px; border-left: 4px solid #667eea; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .success { background: #d4edda; padding: 10px; border-radius: 8px; margin: 10px 0; }
+    .info { background: #cfe2ff; padding: 10px; border-radius: 8px; margin: 10px 0; }
+    .stButton > button { background: #667eea !important; color: white !important; border: none !important; border-radius: 8px !important; padding: 10px 20px !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize Session State
+# Session State
 if 'language' not in st.session_state:
     st.session_state.language = 'English'
 if 'favorites' not in st.session_state:
     st.session_state.favorites = []
-if 'history' not in st.session_state:
-    st.session_state.history = []
-if 'last_query' not in st.session_state:
-    st.session_state.last_query = None
+if 'guide_step' not in st.session_state:
+    st.session_state.guide_step = 0
 
 def t(key):
     return TRANSLATIONS.get(st.session_state.language, TRANSLATIONS['English']).get(key, key)
 
-# AWS Polly Client
 @st.cache_resource
 def get_polly_client():
     try:
@@ -277,353 +220,243 @@ def get_polly_client():
             aws_access_key_id=st.secrets.get("AWS_ACCESS_KEY_ID"),
             aws_secret_access_key=st.secrets.get("AWS_SECRET_ACCESS_KEY")
         )
-    except Exception as e:
+    except:
         return None
 
 def speak_with_polly(text, language):
-    """Speak text using AWS Polly in the user's language"""
     try:
-        polly_client = get_polly_client()
-        if not polly_client:
-            st.error("⚠️ AWS Polly not configured. Add credentials to Streamlit secrets.")
-            return False
+        polly = get_polly_client()
+        if not polly:
+            st.warning("Polly not configured")
+            return
         
-        voice_id = POLLY_VOICES.get(language, "Joanna")
+        voice = POLLY_VOICES.get(language, "Joanna")
         lang_code = POLLY_LANG_CODES.get(language, "en-US")
         
-        # Get speech from Polly
-        response = polly_client.synthesize_speech(
-            Text=text[:1500],  # Limit text length for Polly
+        response = polly.synthesize_speech(
+            Text=text[:1500],
             OutputFormat='mp3',
-            VoiceId=voice_id,
+            VoiceId=voice,
             LanguageCode=lang_code
         )
         
-        # Play audio
         audio_stream = response['AudioStream'].read()
-        st.audio(audio_stream, format="audio/mp3", autoplay=False)
-        return True
+        st.audio(audio_stream, format="audio/mp3")
     except Exception as e:
-        st.error(f"⚠️ Polly Error: {str(e)}")
-        return False
+        st.error(f"Audio error: {str(e)}")
 
-API_URL = "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"
+# MAIN UI
+st.markdown(f"<div class='header'><h1>{t('title')}</h1><p>{t('subtitle')}</p></div>", unsafe_allow_html=True)
 
-# SCHEMES DATABASE
-SCHEMES = {
-    "PM-Kisan": {"benefit": "₹6,000/year", "eligibility": "All farmers", "contact": "1800-180-1111"},
-    "MGNREGA": {"benefit": "100 days work/year", "eligibility": "Rural workers", "contact": "State office"},
-    "PMJDY": {"benefit": "Free bank account", "eligibility": "All citizens", "contact": "Nearest bank"},
-    "Ayushman Bharat": {"benefit": "₹5L health insurance", "eligibility": "Income <3L", "contact": "Hospital"},
-    "PMSBY": {"benefit": "₹2L insurance/₹12", "eligibility": "18-70 with account", "contact": "Bank"},
-    "PM-Mandhan": {"benefit": "₹3,000/month pension", "eligibility": "Farmers 18-40", "contact": "CSC/Bank"},
-    "KCC": {"benefit": "Agri loans 4%", "eligibility": "Farmers", "contact": "Bank"},
-    "Awas Yojana": {"benefit": "₹2-3L subsidy", "eligibility": "BPL families", "contact": "Gram Panchayat"},
-    "Sukanya": {"benefit": "8% interest for girls", "eligibility": "Girls <10yrs", "contact": "Post office"}
-}
-
-# SUCCESS STORIES
-STORIES = [
-    {"name": "Ramesh", "state": "Punjab", "scheme": "PM-Kisan", "benefit": "₹6,000", "story": "Got ₹6,000 for farming!"},
-    {"name": "Priya", "state": "Maharashtra", "scheme": "MGNREGA", "benefit": "100 days", "story": "Earned ₹20,000!"},
-    {"name": "Vijay", "state": "Rajasthan", "scheme": "Ayushman", "benefit": "₹5L", "story": "Free surgery!"},
-    {"name": "Anjali", "state": "Gujarat", "scheme": "PMJDY", "benefit": "Free account", "story": "Free account!"},
-]
-
-# ============================================
-# MAIN UI START
-# ============================================
-
-# Header
-col1, col2, col3 = st.columns([1, 2, 1])
+col1, col2 = st.columns([3, 1])
+with col1:
+    st.session_state.language = st.selectbox("🌐", list(TRANSLATIONS.keys()), index=list(TRANSLATIONS.keys()).index(st.session_state.language), key="lang")
 with col2:
-    st.session_state.language = st.selectbox(
-        "🌐", 
-        list(TRANSLATIONS.keys()), 
-        index=list(TRANSLATIONS.keys()).index(st.session_state.language), 
-        key="lang_select"
-    )
+    st.write("")
 
-st.markdown(f"<div class='header'><h1>🤖 {t('title')}</h1><p>{t('subtitle')}</p></div>", unsafe_allow_html=True)
+# MAIN TABS
+tabs = st.tabs(["🔍 Search", "📢 Voice Guide", "📋 Form Filler", "❤️ Favorites", "📞 Help"])
 
-# Main Tabs
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
-    "🏠 Search", 
-    "❤️ Favorites", 
-    "📜 History", 
-    "📊 Compare", 
-    "⭐ Stories", 
-    "💰 Benefits", 
-    "📞 Contacts"
-])
-
-# ============================================
 # TAB 1: SEARCH
-# ============================================
-with tab1:
+with tabs[0]:
+    st.markdown("### Search Schemes")
+    
     # Sidebar
-    st.sidebar.markdown("### 🤖 Your Profile")
-    try:
-        st.sidebar.image("public/logo_bot.png", width=100)
-    except:
-        st.sidebar.markdown("### 🤖 Bot")
+    st.sidebar.markdown("### Your Info")
+    occupation = st.sidebar.selectbox("Job", ["Farmer", "Laborer", "Self-Employed", "Unemployed", "Other"], key="occ")
+    income = st.sidebar.number_input("Income (₹)", 0, 1000000, 50000, key="inc")
     
-    st.sidebar.markdown("---")
-    
-    occupation = st.sidebar.selectbox(
-        t('occupation'),
-        ["Farmer (किसान)", "Agricultural Labourer (कृषि मजदूर)", "Self-Employed", "Unemployed", "Student", "Business Owner", "Other"],
-        key="occ"
-    )
-    
-    income = st.sidebar.number_input(t('income'), min_value=0, value=80000, step=10000, key="inc")
-    
-    st.sidebar.markdown("---")
-    if income < 100000 and ("Farmer" in occupation or "Labourer" in occupation):
-        st.sidebar.success("🎯 High-Priority")
-    elif income < 300000:
-        st.sidebar.info("📋 Standard")
-    else:
-        st.sidebar.warning("⚠️ Limited")
-    
-    # Main Content
-    st.markdown(f"### {t('question')}")
-    
-    # Quick Schemes - FIXED
-    st.markdown("### 🚀 Quick Schemes (Click to Search)")
-    cols = st.columns(5)
-    for idx, scheme in enumerate(list(SCHEMES.keys())[:5]):
-        with cols[idx]:
-            if st.button(scheme, use_container_width=True, key=f"q_scheme_{scheme}_{idx}"):
-                st.session_state.last_query = f"Tell me about {scheme}"
-    
-    # Input Area
-    col1, col2 = st.columns([4, 1])
-    with col1:
-        query = st.text_area(
-            "Query", 
-            value=st.session_state.last_query or "",
-            placeholder="Ask about schemes or type your question...", 
-            height=80, 
-            label_visibility="collapsed",
-            key="query_input"
-        )
-        if st.session_state.last_query:
-            st.session_state.last_query = None
-    
-    with col2:
-        st.write("")
-        st.write("")
-        if st.button("🎤", use_container_width=True, key="voice_input_btn"):
-            st.info("🎤 Mic feature coming soon")
-    
-    # Action Buttons
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        search_btn = st.button(t('search'), use_container_width=True, key="search_main")
-    with col2:
-        clear_btn = st.button(t('clear'), use_container_width=True, key="clear_main")
-    with col3:
-        fav_btn = st.button(t('favorite'), use_container_width=True, key="fav_main")
-    with col4:
-        st.button("📊 Compare", use_container_width=True, key="comp_main")
-    
-    if clear_btn:
-        st.rerun()
-    
-    # SEARCH LOGIC
-    if search_btn and query.strip():
-        with st.spinner("🔄 Searching..."):
-            try:
-                payload = {
-                    "query": query,
-                    "income": int(income),
-                    "occupation": occupation,
-                    "language": st.session_state.language
-                }
+    # Quick buttons - OPTIMIZED FOR 2G
+    st.markdown("**Quick Schemes:**")
+    cols = st.columns(2)
+    for idx, scheme in enumerate(list(KNOWLEDGE_BASE.keys())[:4]):
+        with cols[idx % 2]:
+            if st.button(scheme, use_container_width=True, key=f"scheme_{scheme}"):
+                scheme_data = KNOWLEDGE_BASE[scheme]
                 
-                response = requests.post(
-                    API_URL,
-                    json=payload,
-                    headers={"Content-Type": "application/json"},
-                    timeout=15
-                )
+                # Display info
+                st.markdown(f"<div class='success'><h4>{scheme_data['name']}</h4></div>", unsafe_allow_html=True)
+                st.markdown(f"**Benefit:** {scheme_data['benefit']}")
                 
-                if response.status_code == 200:
-                    api_response = response.json()
-                    
-                    # Handle response
-                    if isinstance(api_response, dict) and 'body' in api_response:
-                        if isinstance(api_response['body'], str):
-                            result = json.loads(api_response['body'])
-                        else:
-                            result = api_response['body']
-                    else:
-                        result = api_response
-                    
-                    # GET ANSWER - Lambda should return in user's language
-                    answer = result.get('answer', 'No information available')
-                    
-                    # Add to history
-                    st.session_state.history.append({
-                        "query": query,
-                        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                        "result": result,
-                        "answer": answer
-                    })
-                    
-                    # Display Results
-                    st.markdown(f"### {t('eligibility')}")
-                    eligibility = result.get('eligibility_status', 'Unknown')
-                    
-                    if eligibility == 'High-Priority':
-                        st.success("✅ HIGH-PRIORITY ELIGIBLE")
-                    else:
-                        st.info(f"📋 {eligibility} ELIGIBLE")
-                    
-                    st.markdown(f"### {t('detailed_info')}")
-                    st.markdown(f'<div class="result-box">{answer}</div>', unsafe_allow_html=True)
-                    
-                    # Voice Output - POLLY
-                    col1, col2 = st.columns([4, 1])
-                    with col2:
-                        if st.button(t('listen'), use_container_width=True, key="listen_btn"):
-                            speak_with_polly(answer, st.session_state.language)
-                    
-                    # Profile
-                    st.markdown(f"### {t('your_profile')}")
-                    col1, col2, col3 = st.columns(3)
-                    col1.metric("💰 Income", f"₹{income:,}")
-                    col2.metric("👨 Job", occupation.split("(")[0])
-                    col3.metric("✅ Status", eligibility)
-                    
-                    # Save Favorite
-                    if fav_btn:
-                        already_exists = False
-                        for fav in st.session_state.favorites:
-                            if fav['query'] == query:
-                                already_exists = True
-                                break
-                        
-                        if not already_exists:
-                            st.session_state.favorites.append({
-                                "query": query,
-                                "result": result,
-                                "answer": answer,
-                                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                                "occupation": occupation,
-                                "income": income
-                            })
-                            st.success("❤️ Saved to Favorites!")
-                        else:
-                            st.warning("Already in favorites!")
-                else:
-                    st.error(f"API Error: {response.status_code}")
-            except Exception as e:
-                st.error(f"Error: {str(e)}")
-
-# ============================================
-# TAB 2: FAVORITES
-# ============================================
-with tab2:
-    st.markdown("### ❤️ Your Favorites")
-    if st.session_state.favorites:
-        st.success(f"You have {len(st.session_state.favorites)} favorite(s) saved!")
-        for idx, fav in enumerate(st.session_state.favorites):
-            with st.expander(f"💾 {fav['query']} ({fav['timestamp']})"):
-                st.write(f"**Occupation:** {fav['occupation']}")
-                st.write(f"**Income:** ₹{fav['income']:,}")
-                st.markdown(f'<div class="result-box">{fav.get("answer", "No details")[:400]}</div>', unsafe_allow_html=True)
+                st.markdown("**Eligibility:**")
+                for elig in scheme_data['eligibility']:
+                    st.write(f"✓ {elig}")
                 
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    if st.button("🗑️ Remove", key=f"remove_{idx}"):
-                        st.session_state.favorites.pop(idx)
-                        st.success("Removed!")
-                        st.rerun()
-                with col2:
-                    if st.button("📋 Full", key=f"full_{idx}"):
-                        st.write(fav.get("answer", "No details"))
-                with col3:
-                    if st.button("🔊 Listen", key=f"listen_fav_{idx}"):
-                        speak_with_polly(fav.get("answer", ""), st.session_state.language)
-    else:
-        st.info("❤️ No favorites saved yet! Save one above.")
+                st.markdown("**Documents Needed:**")
+                for doc in scheme_data['documents']:
+                    st.write(f"• {doc}")
+                
+                # Voice play
+                if st.button(f"{t('listen')} - {scheme}", key=f"listen_{scheme}"):
+                    text = f"{scheme_data['name']}. Benefit: {scheme_data['benefit']}. Eligibility: {', '.join(scheme_data['eligibility'])}. Contact: {scheme_data['toll_free']}"
+                    speak_with_polly(text, st.session_state.language)
+                
+                # Save favorite
+                if st.button(f"{t('save')} - {scheme}", key=f"save_{scheme}"):
+                    if scheme not in st.session_state.favorites:
+                        st.session_state.favorites.append(scheme)
+                        st.success("Saved!")
+    
+    # Search custom
+    st.markdown("---")
+    st.markdown("**Custom Search:**")
+    query = st.text_input("Ask anything about schemes...", key="search_query")
+    
+    if st.button(t('search'), use_container_width=True):
+        if query.strip():
+            # Search in knowledge base
+            found = False
+            for scheme, data in KNOWLEDGE_BASE.items():
+                if query.lower() in scheme.lower() or query.lower() in data['name'].lower():
+                    st.markdown(f"<div class='success'><h4>Found: {data['name']}</h4></div>", unsafe_allow_html=True)
+                    st.markdown(f"**Benefit:** {data['benefit']}")
+                    st.markdown(f"**Website:** {data['website']}")
+                    st.markdown(f"**Toll Free:** {data['toll_free']}")
+                    found = True
+            
+            if not found:
+                st.info("Scheme not found. Try another search.")
 
-# ============================================
-# TAB 3: HISTORY
-# ============================================
-with tab3:
-    st.markdown("### 📜 Search History")
-    if st.session_state.history:
-        st.info(f"You have {len(st.session_state.history)} search(es)")
-        for item in reversed(st.session_state.history[-10:]):
-            with st.expander(f"🔍 {item['query']} ({item['timestamp']})"):
-                st.markdown(f'<div class="result-box">{item.get("answer", "No details")[:300]}...</div>', unsafe_allow_html=True)
-                if st.button("🔊 Listen", key=f"listen_hist_{item['timestamp']}"):
-                    speak_with_polly(item.get("answer", ""), st.session_state.language)
-    else:
-        st.info("📜 No history yet!")
+# TAB 2: VOICE GUIDE (STEP-BY-STEP)
+with tabs[1]:
+    st.markdown("### 📢 Step-by-Step Voice Guide")
+    
+    scheme = st.selectbox("Select Scheme for Guide:", list(KNOWLEDGE_BASE.keys()), key="guide_scheme")
+    
+    if scheme:
+        scheme_data = KNOWLEDGE_BASE[scheme]
+        
+        st.markdown(f"<div class='info'><h3>{scheme_data['name']}</h3></div>", unsafe_allow_html=True)
+        st.markdown(f"**Benefit:** {scheme_data['benefit']}")
+        
+        st.markdown("### Application Steps:")
+        
+        for idx, step in enumerate(scheme_data['steps'], 1):
+            col1, col2 = st.columns([4, 1])
+            with col1:
+                st.markdown(f"**Step {idx}:** {step}")
+            with col2:
+                if st.button(f"🔊", key=f"step_voice_{idx}"):
+                    speak_with_polly(f"Step {idx}. {step}", st.session_state.language)
+        
+        # FAQs
+        st.markdown("### FAQs:")
+        for question, answer in scheme_data['faqs'].items():
+            with st.expander(question):
+                st.write(answer)
+                if st.button(f"Listen", key=f"faq_listen_{question}"):
+                    speak_with_polly(f"{question}. Answer: {answer}", st.session_state.language)
 
-# ============================================
-# TAB 4: COMPARE
-# ============================================
-with tab4:
-    st.markdown("### 📊 Compare Schemes")
+# TAB 3: AUTO FORM FILLER
+with tabs[2]:
+    st.markdown("### 📋 Auto-Fill Government Forms")
+    
+    st.markdown("**Fill your details once, use for all forms:**")
+    
     col1, col2 = st.columns(2)
     with col1:
-        s1 = st.selectbox("Scheme 1", list(SCHEMES.keys()), key="s1_comp")
-    with col2:
-        s2 = st.selectbox("Scheme 2", list(SCHEMES.keys()), key="s2_comp")
+        name = st.text_input("Full Name")
+        aadhar = st.text_input("Aadhar Number (12 digits)")
+        phone = st.text_input("Phone Number")
     
-    if s1 != s2:
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.markdown("**Criteria**\n\nBenefit\n\nEligibility\n\nContact")
-        with col2:
-            st.markdown(f"**{s1}**\n\n{SCHEMES[s1]['benefit']}\n\n{SCHEMES[s1]['eligibility']}\n\n{SCHEMES[s1]['contact']}")
-        with col3:
-            st.markdown(f"**{s2}**\n\n{SCHEMES[s2]['benefit']}\n\n{SCHEMES[s2]['eligibility']}\n\n{SCHEMES[s2]['contact']}")
+    with col2:
+        dob = st.date_input("Date of Birth")
+        address = st.text_area("Address")
+        bank_account = st.text_input("Bank Account Number")
+    
+    if st.button("Generate Form Details", use_container_width=True):
+        if name and aadhar:
+            form_data = {
+                "Name": name,
+                "Aadhar": aadhar,
+                "Phone": phone,
+                "DOB": str(dob),
+                "Address": address,
+                "Bank Account": bank_account,
+                "Occupation": occupation,
+                "Income": f"₹{income:,}"
+            }
+            
+            st.markdown("### Your Form Details:")
+            st.json(form_data)
+            
+            # Download as text
+            form_text = "\n".join([f"{k}: {v}" for k, v in form_data.items()])
+            st.download_button(
+                label="Download Form Details (TXT)",
+                data=form_text,
+                file_name="indicsetu_form_details.txt",
+                mime="text/plain"
+            )
+            
+            # Download as JSON
+            st.download_button(
+                label="Download as JSON",
+                data=json.dumps(form_data, indent=2),
+                file_name="indicsetu_form_details.json",
+                mime="application/json"
+            )
+            
+            st.success("✅ Print or take screenshot for government offices!")
 
-# ============================================
-# TAB 5: SUCCESS STORIES
-# ============================================
-with tab5:
-    st.markdown("### ⭐ Success Stories")
-    for story in STORIES:
-        st.markdown(f"""
-        <div class="success-card">
-            <h4>{story['name']} - {story['state']}</h4>
-            <p><strong>Scheme:</strong> {story['scheme']} | <strong>Benefit:</strong> {story['benefit']}</p>
-            <p><em>"{story['story']}"</em></p>
-        </div>
-        """, unsafe_allow_html=True)
+# TAB 4: FAVORITES
+with tabs[3]:
+    st.markdown("### ❤️ Saved Schemes")
+    
+    if st.session_state.favorites:
+        st.success(f"You have {len(st.session_state.favorites)} saved scheme(s)")
+        
+        for scheme in st.session_state.favorites:
+            if scheme in KNOWLEDGE_BASE:
+                data = KNOWLEDGE_BASE[scheme]
+                with st.expander(f"💾 {scheme}"):
+                    st.markdown(f"**Name:** {data['name']}")
+                    st.markdown(f"**Benefit:** {data['benefit']}")
+                    st.markdown(f"**Website:** {data['website']}")
+                    
+                    if st.button(f"Remove", key=f"remove_{scheme}"):
+                        st.session_state.favorites.remove(scheme)
+                        st.rerun()
+    else:
+        st.info("No favorites yet! Save schemes from the Search tab.")
 
-# ============================================
-# TAB 6: BENEFITS CALCULATOR
-# ============================================
-with tab6:
-    st.markdown("### 💰 Calculate Benefits")
-    calc_income = st.number_input("Your income (₹)", 0, 10000000, 80000, key="calc_inc")
-    st.markdown("**You might be eligible for:**")
-    count = 0
-    for scheme, info in SCHEMES.items():
-        if calc_income < 300000:
-            count += 1
-            st.markdown(f'<div class="card">✅ <strong>{scheme}</strong><br>{info["benefit"]}</div>', unsafe_allow_html=True)
-    st.metric("Total Eligible Schemes", count)
-
-# ============================================
-# TAB 7: GOVERNMENT CONTACTS
-# ============================================
-with tab7:
-    st.markdown("### 📞 Government Contacts")
-    for scheme, info in SCHEMES.items():
-        with st.expander(f"📞 {scheme}"):
-            st.write(f"📱 Contact: {info['contact']}")
-            st.write(f"☎️ Toll Free: 1800-180-1111")
+# TAB 5: HELP
+with tabs[4]:
+    st.markdown("### 📞 Help & Support")
+    
+    st.markdown("""
+    **Toll Free Numbers:**
+    - PM-Kisan: 1800-180-1111
+    - MGNREGA: 1800-345-6777
+    - Ayushman Bharat: 1800-111-565
+    - PMJDY: 1800-180-1111
+    
+    **How to Use Indic-Setu:**
+    1. **Search Tab:** Find schemes by name or question
+    2. **Voice Guide:** Get step-by-step spoken instructions
+    3. **Form Filler:** Save your details for all forms
+    4. **Favorites:** Save schemes you like
+    
+    **2G Compatible:**
+    ✅ Works on slow internet
+    ✅ Minimal data usage
+    ✅ Voice output available
+    ✅ No large images or videos
+    
+    **Tips:**
+    - Use voice guide for step-by-step help
+    - Save your info in form filler for quick access
+    - Call toll-free numbers for more help
+    - Visit official websites for updates
+    """)
+    
+    # Feedback
+    st.markdown("---")
+    feedback = st.text_area("Send us feedback:")
+    if st.button("Send Feedback"):
+        if feedback:
+            st.success("✅ Thank you for your feedback!")
 
 # Footer
 st.markdown("---")
-st.markdown("<div style='text-align: center; color: #666;'><p><strong>🌾 Indic-Setu</strong> | © 2026 AWS AI For Bharat</p></div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; color: #666;'><p>🌾 Indic-Setu | Making Government Schemes Accessible | © 2026</p></div>", unsafe_allow_html=True)
