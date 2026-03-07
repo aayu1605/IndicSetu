@@ -254,6 +254,106 @@ SCHEMES = {
     }
 }
 
+# ADD DETAILED PDF SCHEMES TO SCHEMES DATABASE
+SCHEMES.update({
+    "Mudra": {
+        "English": {
+            "name": "Pradhan Mantri MUDRA Yojana",
+            "about": "Government scheme to provide loans up to Rs. 10 lakh to small business owners and entrepreneurs without collateral",
+            "benefit": "Easy loans without collateral for business development",
+            "how_much": "Up to Rs. 10 lakh with simple documentation",
+            "eligibility": "Self-employed, small business owners, entrepreneurs, age 18+",
+            "documents": "PAN, Aadhar, Business plan, Bank account",
+            "website": "https://www.mudra.org.in",
+            "helpline": "1800-180-6763",
+            "steps": ["Contact bank or NBFC", "Submit business plan", "Get loan approval", "Receive funds", "Start business"]
+        },
+        "हिंदी": {
+            "name": "प्रधानमंत्री मुद्रा योजना",
+            "about": "छोटे व्यवसायी और उद्यमियों को 10 लाख तक का ऋण प्रदान करने की सरकारी योजना",
+            "benefit": "बिना गिरवी के आसान ऋण",
+            "how_much": "10 लाख तक सरल दस्तावेजों के साथ",
+            "eligibility": "स्व-नियोजित, छोटे व्यवसायी, उद्यमी, 18+ उम्र",
+            "documents": "पैन, आधार, व्यवसायिक योजना, बैंक खाता",
+            "website": "https://www.mudra.org.in",
+            "helpline": "1800-180-6763",
+            "steps": ["बैंक से संपर्क करें", "व्यवसायिक योजना जमा करें", "ऋण स्वीकृति", "धनराशि प्राप्त करें", "व्यवसाय शुरू करें"]
+        }
+    },
+    "SFURTI": {
+        "English": {
+            "name": "Scheme of Fund for Regeneration of Traditional Industries",
+            "about": "Government scheme to develop traditional and handicraft industries through clusters and groups",
+            "benefit": "Financial support for traditional industry development",
+            "how_much": "Up to Rs. 1-3 crore depending on cluster size",
+            "eligibility": "Artisans, traditional industry associations, state governments",
+            "documents": "Registration certificate, Business plan, Identity proof",
+            "website": "https://www.sfurti.gov.in",
+            "helpline": "1800-180-6763",
+            "steps": ["Identify cluster", "Form group", "Submit proposal", "Get approval", "Receive funding"]
+        },
+        "हिंदी": {
+            "name": "परंपरागत उद्योग पुनरुद्धार योजना",
+            "about": "पारंपरिक और हस्तशिल्प उद्योगों को समूहों के माध्यम से विकसित करने की योजना",
+            "benefit": "पारंपरिक उद्योग विकास के लिए वित्तीय सहायता",
+            "how_much": "क्लस्टर आकार के आधार पर 1-3 करोड़ तक",
+            "eligibility": "कारीगर, परंपरागत उद्योग संघ, राज्य सरकारें",
+            "documents": "पंजीकरण प्रमाणपत्र, व्यवसायिक योजना, पहचान प्रमाण",
+            "website": "https://www.sfurti.gov.in",
+            "helpline": "1800-180-6763",
+            "steps": ["समूह की पहचान करें", "समूह बनाएं", "प्रस्ताव जमा करें", "अनुमोदन प्राप्त करें", "वित्त पोषण प्राप्त करें"]
+        }
+    },
+    "PMEGP": {
+        "English": {
+            "name": "Pradhan Mantri Employment Generation Scheme",
+            "about": "Scheme to generate self-employment opportunities through setting up new micro and small industries",
+            "benefit": "Subsidy for new micro and small enterprises",
+            "how_much": "15-25% subsidy on project cost (up to Rs. 25 lakh)",
+            "eligibility": "Age 18+, education 8th pass, business idea, first-time entrepreneur preferred",
+            "documents": "PAN, Aadhar, Educational certificate, Business plan",
+            "website": "https://www.kvic.org.in",
+            "helpline": "1800-180-6763",
+            "steps": ["Prepare business plan", "Apply with documents", "Get training", "Receive subsidy", "Start enterprise"]
+        },
+        "हिंदी": {
+            "name": "प्रधानमंत्री रोजगार सृजन योजना",
+            "about": "छोटे उद्योगों की स्थापना के माध्यम से स्व-रोजगार के अवसर सृजित करने की योजना",
+            "benefit": "नए सूक्ष्म और लघु उद्यमों के लिए सब्सिडी",
+            "how_much": "परियोजना लागत पर 15-25% सब्सिडी (25 लाख तक)",
+            "eligibility": "18+ उम्र, 8वीं पास, व्यवसायिक विचार, नया उद्यमी",
+            "documents": "पैन, आधार, शैक्षणिक प्रमाणपत्र, व्यवसायिक योजना",
+            "website": "https://www.kvic.org.in",
+            "helpline": "1800-180-6763",
+            "steps": ["व्यवसायिक योजना तैयार करें", "दस्तावेजों के साथ आवेदन करें", "प्रशिक्षण लें", "सब्सिडी प्राप्त करें", "उद्यम शुरू करें"]
+        }
+    },
+    "Technology Upgradation": {
+        "English": {
+            "name": "Technology Upgradation Fund Scheme",
+            "about": "Scheme to help small industries modernize with latest technology and equipment",
+            "benefit": "Financial assistance for equipment and technology upgradation",
+            "how_much": "Up to 50-70% of project cost as subsidy/loan",
+            "eligibility": "Small and medium enterprises, manufacturing sector",
+            "documents": "Business registration, Financial statements, Technical proposal",
+            "website": "https://msme.gov.in",
+            "helpline": "1800-180-6763",
+            "steps": ["Assess technology needs", "Prepare technical proposal", "Get quotes", "Apply for subsidy", "Upgrade equipment"]
+        },
+        "हिंदी": {
+            "name": "तकनीकी उन्नयन निधि योजना",
+            "about": "छोटे उद्योगों को नवीनतम तकनीक के साथ आधुनिकीकरण में मदद करने की योजना",
+            "benefit": "उपकरण और तकनीक उन्नयन के लिए वित्तीय सहायता",
+            "how_much": "परियोजना लागत का 50-70% तक सब्सिडी/ऋण",
+            "eligibility": "छोटे और मध्यम उद्यम, विनिर्माण क्षेत्र",
+            "documents": "व्यवसाय पंजीकरण, वित्तीय विवरण, तकनीकी प्रस्ताव",
+            "website": "https://msme.gov.in",
+            "helpline": "1800-180-6763",
+            "steps": ["तकनीकी जरूरतों का आकलन करें", "तकनीकी प्रस्ताव तैयार करें", "कोटेशन लें", "सब्सिडी के लिए आवेदन करें", "उपकरण अपग्रेड करें"]
+        }
+    }
+})
+
 # CSS
 st.markdown("""
 <style>
@@ -367,44 +467,99 @@ Please call the helpline for comprehensive details about this specific scheme.""
         data = scheme_data["English"]
     
     # Answer different question types
-    if any(word in question_lower for word in ['how much', 'कितना', 'எவ்வளவு', 'किती', 'કેટલું', 'ఎంత', 'amount', 'loan', 'grant', 'money']):
-        return f"**{data['name']}**: {data['how_much']}"
+    if any(word in question_lower for word in ['how much', 'कितना', 'எவ்வளவு', 'किती', 'કેટલું', 'ఎంత', 'amount', 'loan', 'grant', 'money', 'commission', 'lagse', 'लागे', 'लगता']):
+        return f"""**{data['name']}**
+
+{data['about']}
+
+**Amount/Benefit:** {data['how_much']}
+**Eligibility:** {data['eligibility']}
+**Helpline:** {data['helpline']}"""
     
-    elif any(word in question_lower for word in ['eligible', 'who can', 'पात्र', 'தகுதி', 'योग्य', 'પાત્ર', 'అర్హత', 'can apply', 'apply', 'qualify']):
-        return f"**Eligibility**: {data['eligibility']}\n\n**Helpline**: {data['helpline']}"
+    elif any(word in question_lower for word in ['eligible', 'who can', 'पात्र', 'தகுதி', 'योग्य', 'પાત્ર', 'అర్హత', 'can apply', 'apply', 'qualify', 'कौन']):
+        return f"""**{data['name']}**
+
+**Eligibility:** {data['eligibility']}
+
+**Documents Needed:** {data['documents']}
+
+**Helpline:** {data['helpline']}
+**Website:** {data['website']}"""
     
-    elif any(word in question_lower for word in ['document', 'paper', 'कागज', 'दस्तावेज़', 'ஆவணம்', 'कागद', 'દસ્તાવેજ', 'దస్తావేజు', 'requirement', 'require']):
-        return f"**Documents Needed**: {data['documents']}\n\n**Helpline**: {data['helpline']}"
+    elif any(word in question_lower for word in ['document', 'paper', 'कागज', 'दस्तावेज़', 'ஆவணம்', 'कागद', 'દસ્તાવેજ', 'దస్తావేజు', 'requirement', 'require', 'kagajat', 'जोइसे']):
+        return f"""**{data['name']}**
+
+**Documents Required:** {data['documents']}
+
+**Eligibility:** {data['eligibility']}
+
+**Helpline:** {data['helpline']}"""
     
-    elif any(word in question_lower for word in ['apply', 'how', 'कैसे', 'എങ്ങനെ', 'आवेदन', 'अर्ज', 'process', 'registration', 'helpline', 'contact']):
-        steps_text = "\n".join([f"{i}. {step}" for i, step in enumerate(data['steps'][:5], 1)])
-        return f"**How to Apply**:\n{steps_text}\n\n**Helpline**: {data['helpline']}"
+    elif any(word in question_lower for word in ['apply', 'how', 'कैसे', 'എങ്ങനെ', 'आवेदन', 'अर्ज', 'process', 'registration', 'helpline', 'contact', 'कैसे', 'kaya']):
+        steps_text = "\n".join([f"{i}. {step}" for i, step in enumerate(data['steps'], 1)])
+        return f"""**{data['name']}**
+
+**Application Steps:**
+{steps_text}
+
+**Helpline:** {data['helpline']}
+**Website:** {data['website']}"""
     
     elif any(word in question_lower for word in ['when', 'कब', 'எப்போது', 'कधी', 'ક્યારે', 'ఎప్పుడు', 'timing', 'payment', 'schedule']):
-        return f"**Details**: {data['how_much']}\n**Helpline**: {data['helpline']}"
+        return f"""**{data['name']}**
+
+{data['about']}
+
+**Amount:** {data['how_much']}
+
+**Helpline:** {data['helpline']}"""
     
     elif any(word in question_lower for word in ['contact', 'call', 'phone', 'फोन', 'ఫోన్', 'कॉल', 'number', 'helpline', 'website']):
-        return f"**Helpline**: {data['helpline']} | **Website**: {data['website']}"
+        return f"""**{data['name']}**
+
+**Helpline:** {data['helpline']}
+**Website:** {data['website']}
+**Timing:** 6 PM to 10 PM (Hindi/English)
+
+**You can call for:**
+- Eligibility verification
+- Documents required
+- Application process
+- Financial assistance details"""
     
-    elif any(word in question_lower for word in ['scheme', 'योजना', 'schemes', 'benefits', 'laabh', 'लाभ', 'advantage', 'benefit']):
-        if 'schemes' in data:
-            return f"**{data['name']}**\n**Available Support**: {data['schemes']}\n**Helpline**: {data['helpline']}"
-        else:
-            return f"**{data['name']}**\n{data['about']}\n**Helpline**: {data['helpline']}"
-    
-    elif any(word in question_lower for word in ['about', 'what', 'क्या', 'എന്ത്', 'काय', 'શું', 'ఏమిటి', 'information', 'details']):
-        return f"**{data['name']}**\n{data['about']}\n**Helpline**: {data['helpline']}"
+    elif any(word in question_lower for word in ['scheme', 'योजना', 'schemes', 'benefits', 'laabh', 'लाभ', 'advantage', 'benefit', 'क्या', 'काय']):
+        return f"""**{data['name']}**
+
+**About:** {data['about']}
+
+**Benefit:** {data['benefit']}
+
+**Amount:** {data['how_much']}
+
+**Eligibility:** {data['eligibility']}
+
+**Helpline:** {data['helpline']}"""
     
     else:
-        # Default: show full info
+        # Default: show full comprehensive info
+        steps_text = "\n".join([f"{i}. {step}" for i, step in enumerate(data['steps'], 1)])
         return f"""**{data['name']}**
-        
+
 **About:** {data['about']}
+
 **Benefit:** {data['benefit']}
+
 **Amount:** {data['how_much']}
+
 **Eligibility:** {data['eligibility']}
+
 **Documents:** {data['documents']}
-**Helpline:** {data['helpline']}"""
+
+**Steps to Apply:**
+{steps_text}
+
+**Helpline:** {data['helpline']}
+**Website:** {data['website']}"""
     
     # Get scheme data
     scheme_data = SCHEMES[scheme]
