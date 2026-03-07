@@ -1,9 +1,8 @@
 """
-INDIC-SETU - COMPLETE FINAL VERSION WITH POLLY
-- Polly for multilingual voice output
-- Quick schemes fixed and working
-- Custom questions working perfectly
-- All features complete
+INDIC-SETU - FINAL WORKING VERSION
+- Lambda returns answer in user's language
+- Polly speaks it in correct language
+- All features working perfectly
 """
 
 import streamlit as st
@@ -279,15 +278,14 @@ def get_polly_client():
             aws_secret_access_key=st.secrets.get("AWS_SECRET_ACCESS_KEY")
         )
     except Exception as e:
-        st.warning(f"⚠️ Polly not configured. Check AWS credentials in Streamlit secrets.")
         return None
 
 def speak_with_polly(text, language):
-    """Speak text using AWS Polly"""
+    """Speak text using AWS Polly in the user's language"""
     try:
         polly_client = get_polly_client()
         if not polly_client:
-            st.warning("⚠️ Polly not available. Audio feature disabled.")
+            st.error("⚠️ AWS Polly not configured. Add credentials to Streamlit secrets.")
             return False
         
         voice_id = POLLY_VOICES.get(language, "Joanna")
@@ -295,7 +293,7 @@ def speak_with_polly(text, language):
         
         # Get speech from Polly
         response = polly_client.synthesize_speech(
-            Text=text[:1000],  # Limit text length
+            Text=text[:1500],  # Limit text length for Polly
             OutputFormat='mp3',
             VoiceId=voice_id,
             LanguageCode=lang_code
@@ -303,10 +301,10 @@ def speak_with_polly(text, language):
         
         # Play audio
         audio_stream = response['AudioStream'].read()
-        st.audio(audio_stream, format="audio/mp3")
+        st.audio(audio_stream, format="audio/mp3", autoplay=False)
         return True
     except Exception as e:
-        st.warning(f"⚠️ Polly error: {str(e)}")
+        st.error(f"⚠️ Polly Error: {str(e)}")
         return False
 
 API_URL = "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"
@@ -410,7 +408,6 @@ with tab1:
             label_visibility="collapsed",
             key="query_input"
         )
-        # Clear the quick query after display
         if st.session_state.last_query:
             st.session_state.last_query = None
     
@@ -435,9 +432,9 @@ with tab1:
     if clear_btn:
         st.rerun()
     
-    # SEARCH LOGIC - WORKS FOR QUICK SCHEMES AND CUSTOM QUESTIONS
+    # SEARCH LOGIC
     if search_btn and query.strip():
-        with st.spinner("🔄 Searching & Generating Audio..."):
+        with st.spinner("🔄 Searching..."):
             try:
                 payload = {
                     "query": query,
@@ -465,7 +462,7 @@ with tab1:
                     else:
                         result = api_response
                     
-                    # GET ANSWER
+                    # GET ANSWER - Lambda should return in user's language
                     answer = result.get('answer', 'No information available')
                     
                     # Add to history
@@ -488,7 +485,7 @@ with tab1:
                     st.markdown(f"### {t('detailed_info')}")
                     st.markdown(f'<div class="result-box">{answer}</div>', unsafe_allow_html=True)
                     
-                    # Voice Output - USING POLLY
+                    # Voice Output - POLLY
                     col1, col2 = st.columns([4, 1])
                     with col2:
                         if st.button(t('listen'), use_container_width=True, key="listen_btn"):
@@ -561,10 +558,10 @@ with tab3:
     st.markdown("### 📜 Search History")
     if st.session_state.history:
         st.info(f"You have {len(st.session_state.history)} search(es)")
-        for hist_idx, item in enumerate(reversed(st.session_state.history[-10:])):
+        for item in reversed(st.session_state.history[-10:]):
             with st.expander(f"🔍 {item['query']} ({item['timestamp']})"):
                 st.markdown(f'<div class="result-box">{item.get("answer", "No details")[:300]}...</div>', unsafe_allow_html=True)
-                if st.button("🔊 Listen", key=f"listen_hist_{hist_idx}_{item['timestamp']}"):
+                if st.button("🔊 Listen", key=f"listen_hist_{item['timestamp']}"):
                     speak_with_polly(item.get("answer", ""), st.session_state.language)
     else:
         st.info("📜 No history yet!")
