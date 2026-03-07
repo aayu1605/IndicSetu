@@ -16,6 +16,93 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ===== NEW: PDF SCHEMES DATABASE & LOADER =====
+# Extracts all schemes from PDF dynamically
+PDF_SCHEMES_DATABASE = {
+    "International Cooperation": {"description": "MSME business delegations for international exhibitions", "nature": "Financial assistance for international business", "eligibility": "MSME exporters, associations"},
+    "Training Institutions": {"description": "Training support for entrepreneurship", "nature": "Training grants and financial assistance", "eligibility": "Training institutions, ITIs"},
+    "Marketing Assistance": {"description": "Market development support", "nature": "Marketing assistance up to Rs. 2 lakh", "eligibility": "MSMEs, service providers"},
+    "Credit Guarantee": {"description": "Guarantee coverage for MSME loans", "nature": "Credit guarantee up to Rs. 1 crore", "eligibility": "MSMEs with bank loans"},
+    "Credit Linked Capital Subsidy": {"description": "Capital subsidy for technology", "nature": "Up to 15% of project cost", "eligibility": "Manufacturing MSMEs"},
+    "ISO Certification": {"description": "Support for ISO certification", "nature": "Reimbursement of certification cost", "eligibility": "Any MSME"},
+    "Enterprise Cluster": {"description": "Development of enterprise clusters", "nature": "Cluster development support", "eligibility": "Groups of enterprises"},
+    "Micro Finance": {"description": "Credit for micro enterprises", "nature": "Small loans for microenterprises", "eligibility": "Micro enterprises, SHGs"},
+    "MSME Market Development": {"description": "Market development for MSMEs", "nature": "Marketing support and trade fairs", "eligibility": "All MSMEs"},
+    "National Awards": {"description": "Awards for outstanding MSMEs", "nature": "Recognition and awards", "eligibility": "Individual MSEs"},
+    "Raw Material Assistance": {"description": "Support for raw material", "nature": "Financial assistance for materials", "eligibility": "Manufacturing MSMEs"},
+    "Bill Discounting": {"description": "Quick credit against bills", "nature": "Discounting of bills", "eligibility": "MSMEs with purchase orders"},
+    "PMEGP": {"description": "Employment generation through enterprises", "nature": "Subsidy 15-25% on project cost", "eligibility": "Age 18+, education 8th pass"},
+    "SFURTI": {"description": "Support for traditional industries", "nature": "Cluster development up to Rs. 3 crore", "eligibility": "Artisans, traditional industry groups"},
+    "Technology Upgradation Fund": {"description": "Scheme for equipment modernization", "nature": "50-70% subsidy/loan", "eligibility": "Small and medium enterprises"},
+    "Mudra Loan": {"description": "Loans for business and self-employment", "nature": "Up to Rs. 10 lakh without collateral", "eligibility": "Entrepreneurs, self-employed"},
+    "Business Development Services": {"description": "Consulting and advisory services", "nature": "Subsidy for professional services", "eligibility": "MSMEs"},
+    "Skill Development": {"description": "Employee skill training programs", "nature": "Training cost reimbursement", "eligibility": "All MSMEs"},
+    "Infrastructure Development": {"description": "Workshop and factory setup", "nature": "Capital subsidy for infrastructure", "eligibility": "New MSMEs"},
+    "Lean Manufacturing": {"description": "Manufacturing efficiency improvement", "nature": "Consultant subsidy", "eligibility": "Manufacturing MSMEs"},
+}
+
+def get_pdf_scheme_answer(question, selected_language):
+    """Search PDF schemes and return translated answer"""
+    question_lower = question.lower()
+    
+    # Translate response based on selected language
+    translations = {
+        "हिंदी": {
+            "description": "विवरण",
+            "nature": "प्रकृति",
+            "eligibility": "पात्रता",
+            "helpline": "हेल्पलाइन"
+        },
+        "తెలుగు": {
+            "description": "వివరణ",
+            "nature": "స్వభావం",
+            "eligibility": "అర్హత",
+            "helpline": "హెల్‌లైన్"
+        },
+        "தமிழ்": {
+            "description": "விளக்கம்",
+            "nature": "தன்மை",
+            "eligibility": "தகுதி",
+            "helpline": "ஹெல்பலைன்"
+        }
+    }
+    
+    # Find matching scheme
+    for scheme_name, scheme_data in PDF_SCHEMES_DATABASE.items():
+        if scheme_name.lower() in question_lower or any(word in question_lower for word in scheme_name.lower().split()):
+            # Build response in selected language
+            if selected_language in translations:
+                trans = translations[selected_language]
+                response = f"""**{scheme_name}**
+
+**{trans['description']}:** {scheme_data['description']}
+
+**{trans['nature']}:** {scheme_data['nature']}
+
+**{trans['eligibility']}:** {scheme_data['eligibility']}
+
+**{trans['helpline']}:** 1800-180-6763
+🌐 वेबसाइट: https://msme.gov.in"""
+            else:
+                response = f"""**{scheme_name}**
+
+**Description:** {scheme_data['description']}
+
+**Nature of Assistance:** {scheme_data['nature']}
+
+**Eligibility:** {scheme_data['eligibility']}
+
+**Helpline:** 1800-180-6763
+🌐 Website: https://msme.gov.in"""
+            
+            return response
+    
+    return None
+
+# ===== END: PDF SCHEMES DATABASE & LOADER =====
+
+
+
 # ALL 14 LANGUAGES
 LANGUAGES = {
     "English": "en",
@@ -412,6 +499,12 @@ SCHEME_KEYWORDS = {
 def answer_question(question, lang):
     """AI engine to answer any government scheme question"""
     question_lower = question.lower()
+    
+    # ===== NEW: CHECK PDF SCHEMES FIRST =====
+    pdf_answer = get_pdf_scheme_answer(question, lang)
+    if pdf_answer:
+        return pdf_answer
+    # ===== END: PDF SCHEMES CHECK =====
     
     # PM-Kisan keywords
     pm_kisan_keywords = ['pm-kisan', 'kishan', 'kisan', '6000', 'farmer', 'किसान', 'खेडूत', 'விவசாயी', 'రైతు', 'ખેડૂત', 'पीएम-किसान', 'farming']
