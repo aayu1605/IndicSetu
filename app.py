@@ -1,6 +1,6 @@
 """
-INDIC-SETU - FINAL VERSION WITH TRANSLATION
-Translates answers to regional languages instantly!
+INDIC-SETU - FINAL VERSION WITH TRANSLATION (FIXED)
+Uses googletrans library (correct import)
 """
 
 import streamlit as st
@@ -8,8 +8,6 @@ import requests
 import json
 from datetime import datetime
 from collections import Counter
-from google.cloud import translate_v2
-import os
 
 st.set_page_config(
     page_title="Indic-Setu | सरकारी योजनाएं",
@@ -249,23 +247,18 @@ if 'history' not in st.session_state:
 def t(key):
     return TRANSLATIONS.get(st.session_state.language, TRANSLATIONS['English']).get(key, key)
 
-def translate_text(text, target_language):
-    """
-    Translate text using Google Translate API
-    Falls back to manual translation if API unavailable
-    """
-    if target_language == "English":
+def translate_text(text, target_lang):
+    """Translate text to target language using googletrans"""
+    if target_lang == "English":
         return text
     
     try:
-        # Try using Google Translate API
-        import googletrans
-        translator = googletrans.Translator()
-        translated = translator.translate(text, src_language='en', dest_language=LANGUAGE_CODES.get(target_language, 'en'))
-        return translated['text']
-    except:
-        # Fallback: Return original text with message
-        st.warning(f"⚠️ Translation to {target_language} in progress. Showing English version.")
+        from googletrans import Translator
+        translator = Translator()
+        result = translator.translate(text, src_language='en', dest_language=LANGUAGE_CODES.get(target_lang, 'en'))
+        return result['text']
+    except Exception as e:
+        st.warning(f"⚠️ Translation unavailable. Showing English.")
         return text
 
 API_URL = "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"
@@ -388,7 +381,7 @@ with tab1:
     
     # SEARCH LOGIC WITH TRANSLATION
     if search_btn and query.strip():
-        with st.spinner("🔄 Searching..."):
+        with st.spinner("🔄 Searching & Translating..."):
             try:
                 payload = {
                     "query": query,
@@ -421,20 +414,7 @@ with tab1:
                     
                     # TRANSLATE IF NOT ENGLISH
                     if st.session_state.language != "English":
-                        st.info(f"🌐 Translating to {st.session_state.language}...")
-                        try:
-                            # Install: pip install googletrans==4.0.0
-                            from googletrans import Translator
-                            translator = Translator()
-                            translated_result = translator.translate(
-                                answer_english,
-                                src_language='en',
-                                dest_language=LANGUAGE_CODES.get(st.session_state.language, 'en')
-                            )
-                            answer = translated_result['text']
-                        except:
-                            st.warning("⚠️ Translation service unavailable. Showing English.")
-                            answer = answer_english
+                        answer = translate_text(answer_english, st.session_state.language)
                     else:
                         answer = answer_english
                     
@@ -462,11 +442,12 @@ with tab1:
                     col1, col2 = st.columns([4, 1])
                     with col2:
                         if st.button(t('listen'), use_container_width=True, key="listen_btn"):
+                            lang_code = LANGUAGE_CODES.get(st.session_state.language, 'en')
                             st.markdown(f"""
                             <script>
                             var text = `{answer[:500].replace(chr(34), "").replace(chr(96), "")}`;
                             var utterance = new SpeechSynthesisUtterance(text);
-                            utterance.lang = '{LANGUAGE_CODES.get(st.session_state.language, 'en')}-IN';
+                            utterance.lang = '{lang_code}-IN';
                             utterance.rate = 0.9;
                             window.speechSynthesis.speak(utterance);
                             </script>
@@ -516,7 +497,6 @@ with tab2:
             with st.expander(f"💾 {fav['query']} ({fav['timestamp']})"):
                 st.write(f"**Occupation:** {fav['occupation']}")
                 st.write(f"**Income:** ₹{fav['income']:,}")
-                # SHOW TRANSLATED ANSWER
                 st.markdown(f'<div class="result-box">{fav.get("answer_translated", fav["result"].get("answer", "No details"))[:400]}</div>', unsafe_allow_html=True)
                 
                 col1, col2 = st.columns(2)
@@ -540,7 +520,6 @@ with tab3:
         st.info(f"You have {len(st.session_state.history)} search(es)")
         for item in reversed(st.session_state.history[-10:]):
             with st.expander(f"🔍 {item['query']} ({item['timestamp']})"):
-                # SHOW TRANSLATED ANSWER
                 st.markdown(f'<div class="result-box">{item.get("answer_translated", item["result"].get("answer", "No details"))[:300]}...</div>', unsafe_allow_html=True)
     else:
         st.info("📜 No history yet!")
