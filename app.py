@@ -465,6 +465,18 @@ with tab1:
                     # Listen button
                     col1, col2 = st.columns([4, 1])
                     with col2:
+                        # Using Web Speech API (built into browser!)
+                        if st.button(t('listen'), use_container_width=True, key="listen"):
+                            st.info("🔊 Playing audio...")
+                            st.markdown(f"""
+                            <script>
+                                const text = `{answer.replace(chr(96), ' ')}`;
+                                const utterance = new SpeechSynthesisUtterance(text);
+                                utterance.lang = 'en-IN';
+                                utterance.rate = 0.9;
+                                window.speechSynthesis.speak(utterance);
+                            </script>
+                            """, unsafe_allow_html=True)
                         if st.button(t('listen'), use_container_width=True, key="listen"):
                             try:
                                 from gtts import gTTS
@@ -505,6 +517,32 @@ with tab1:
                 st.error(f"⚠️ Error: {str(e)}")
 
 with tab2:
+    # Proper initialization at start
+if 'favorites' not in st.session_state:
+    st.session_state.favorites = []
+
+# Proper saving logic
+if fav_btn:
+    # Check if already exists (avoid duplicates)
+    already_exists = False
+    for fav in st.session_state.favorites:
+        if fav['query'] == query:
+            already_exists = True
+            break
+    
+    if not already_exists:
+        # Add new favorite
+        st.session_state.favorites.append({
+            "query": query,
+            "result": result,
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "occupation": occupation,
+            "income": income
+        })
+        st.success("❤️ Saved to Favorites!")
+        st.rerun()  # REFRESH TO UPDATE
+    else:
+        st.warning("Already in favorites!")
     st.markdown("### ❤️ Your Favorites")
     if st.session_state.favorites:
         for idx, fav in enumerate(st.session_state.favorites):
@@ -581,3 +619,4 @@ st.markdown("""
     <p>© 2026 | AWS AI For Bharat Hackathon | Made with ❤️ for Rural India</p>
 </div>
 """, unsafe_allow_html=True)
+
