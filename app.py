@@ -543,16 +543,7 @@ with tab2:
         st.rerun()  # REFRESH TO UPDATE
     else:
         st.warning("Already in favorites!")
-    st.markdown("### ❤️ Your Favorites")
-    if st.session_state.favorites:
-        for idx, fav in enumerate(st.session_state.favorites):
-            with st.expander(f"💾 {fav['query']} ({fav['timestamp']})"):
-                st.write(fav['result'].get('answer', 'No details')[:300])
-                if st.button(f"🗑️ Remove", key=f"rem_{idx}"):
-                    st.session_state.favorites.pop(idx)
-                    st.rerun()
-    else:
-        st.info("❤️ No favorites yet!")
+   
 
 with tab3:
     st.markdown("### 📜 Search History")
@@ -619,6 +610,7 @@ st.markdown("""
     <p>© 2026 | AWS AI For Bharat Hackathon | Made with ❤️ for Rural India</p>
 </div>
 """, unsafe_allow_html=True)
+
 
 
 
