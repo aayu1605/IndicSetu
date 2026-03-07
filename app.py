@@ -15,6 +15,20 @@ from io import BytesIO
 import base64
 import os
 
+# Add loading animation
+import streamlit as st
+st.markdown("""
+<style>
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+.pulsing {
+  animation: pulse 1s infinite;
+}
+</style>
+""", unsafe_allow_html=True)
 st.set_page_config(
     page_title="Indic-Setu | सरकारी योजनाएं",
     page_icon="🌾",
@@ -408,6 +422,15 @@ with tab1:
     # ============================================
     # MAIN SEARCH AREA
     # ============================================
+    # Add this to search area
+    st.markdown("### 💡 Quick Schemes")
+    quick_schemes = ["PM-Kisan", "MGNREGA", "Ayushman Bharat", "PMJDY", "PMSBY"]
+
+    cols = st.columns(len(quick_schemes))
+    for idx, scheme in enumerate(quick_schemes):
+        if cols[idx].button(scheme, use_container_width=True):
+            _queryController = scheme
+            st.session_state.quick_query = scheme
     st.markdown(f"### {t('question')}")
     
     col1, col2, col3 = st.columns([3, 1, 1])
@@ -666,3 +689,4 @@ st.markdown("""
     <p><small>Helping 500M+ Indians discover government schemes they're eligible for</small></p>
 </div>
 """, unsafe_allow_html=True)
+
