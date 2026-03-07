@@ -954,6 +954,10 @@ Please call the helpline for comprehensive details about this specific scheme.""
 **Documents:** {data['documents']}
 **Helpline:** {data['helpline']}"""
 
+# ===== TABS DEFINITION =====
+tabs = st.tabs(["🔍 Search", "📢 Guide", "📋 Form", "❤️ Favorites", "📊 Compare", "⭐ Stories", "💰 Benefits", "📞 Contacts"])
+# ===== END TABS DEFINITION =====
+
 # TAB 1: SEARCH
 with tabs[0]:
     st.markdown("### 🔍 Search Schemes & Ask Questions")
