@@ -679,7 +679,12 @@ with tab5:
     
     © 2026 Indic-Setu | Made with ❤️ for India
     """)
-
+st.markdown("""
+### 📹 Learn More
+- [PM-Kisan Explained](youtube.com/...)
+- [MGNREGA Guide](youtube.com/...)
+- [Government Benefits 101](youtube.com/...)
+""")
 # Footer
 st.markdown("---")
 st.markdown("""
@@ -689,4 +694,5 @@ st.markdown("""
     <p><small>Helping 500M+ Indians discover government schemes they're eligible for</small></p>
 </div>
 """, unsafe_allow_html=True)
+
 
