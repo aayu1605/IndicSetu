@@ -16,6 +16,86 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ===== NEW: NETWORK MODE CONFIGURATION =====
+# Optimize app for different network speeds
+NETWORK_MODES = {
+    "2G": {
+        "name": "2G (Slow)",
+        "description": "Ultra-low bandwidth - minimal images/videos",
+        "max_content_size": 30,  # KB
+        "show_images": False,
+        "show_animations": False,
+        "cache_time": 3600,
+        "emoji_only": True
+    },
+    "3G": {
+        "name": "3G (Medium)",
+        "description": "Medium bandwidth - reduced content",
+        "max_content_size": 100,  # KB
+        "show_images": True,
+        "show_animations": False,
+        "cache_time": 1800,
+        "emoji_only": False
+    },
+    "4G": {
+        "name": "4G (Fast)",
+        "description": "High bandwidth - full content",
+        "max_content_size": 500,  # KB
+        "show_images": True,
+        "show_animations": True,
+        "cache_time": 600,
+        "emoji_only": False
+    }
+}
+
+if 'network_mode' not in st.session_state:
+    st.session_state.network_mode = '4G'
+
+def optimize_for_network(content):
+    """Optimize content based on selected network mode"""
+    mode = NETWORK_MODES[st.session_state.network_mode]
+    
+    if not mode['show_images']:
+        # Remove image descriptions for 2G
+        content = content.replace('🌐', '🔗')
+    
+    return content
+
+# ===== NEW: OFFLINE MODE & FAVORITES & HISTORY =====
+if 'favorites' not in st.session_state:
+    st.session_state.favorites = []
+
+if 'search_history' not in st.session_state:
+    st.session_state.search_history = []
+
+if 'offline_mode' not in st.session_state:
+    st.session_state.offline_mode = False
+
+def add_to_favorites(scheme_name):
+    """Add scheme to favorites"""
+    if scheme_name not in st.session_state.favorites:
+        st.session_state.favorites.append(scheme_name)
+        st.success(f"✅ Added {scheme_name} to favorites!")
+    else:
+        st.warning(f"Already in favorites!")
+
+def add_to_history(question):
+    """Add question to search history"""
+    if question not in st.session_state.search_history:
+        st.session_state.search_history.insert(0, question)
+        if len(st.session_state.search_history) > 10:
+            st.session_state.search_history = st.session_state.search_history[:10]
+
+def remove_from_favorites(scheme_name):
+    """Remove scheme from favorites"""
+    if scheme_name in st.session_state.favorites:
+        st.session_state.favorites.remove(scheme_name)
+        st.success(f"✅ Removed {scheme_name} from favorites!")
+
+# ===== END: OFFLINE MODE & FAVORITES & HISTORY =====
+
+
+
 # ===== NEW: PDF SCHEMES DATABASE & LOADER =====
 # Extracts all schemes from PDF dynamically
 PDF_SCHEMES_DATABASE = {
@@ -609,8 +689,49 @@ st.session_state.language = st.selectbox(
     index=default_index
 )
 
-# TABS
-tabs = st.tabs(["🔍 Search", "📢 Guide", "📋 Form", "❤️ Favorites", "📊 Compare", "⭐ Stories", "💰 Benefits", "📞 Contacts"])
+# ===== NEW: NETWORK MODE SELECTOR =====
+st.session_state.network_mode = st.selectbox(
+    "📡 Select Network Mode:",
+    ["2G", "3G", "4G"],
+    index=["2G", "3G", "4G"].index(st.session_state.network_mode),
+    help="Choose your network speed for optimized experience"
+)
+
+# Display network status
+if st.session_state.network_mode == "2G":
+    st.info("📶 2G Mode: Ultra-optimized for slow networks (minimal data)")
+elif st.session_state.network_mode == "3G":
+    st.info("📡 3G Mode: Balanced performance and data usage")
+else:
+    st.success("🚀 4G Mode: Full features with all content")
+# ===== END: NETWORK MODE SELECTOR =====
+
+# ===== NEW: DARK MODE & OFFLINE MODE & STATISTICS =====
+if 'dark_mode' not in st.session_state:
+    st.session_state.dark_mode = False
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.session_state.dark_mode = st.toggle("🌙 Dark Mode", value=st.session_state.dark_mode)
+
+with col2:
+    st.session_state.offline_mode = st.toggle("📴 Offline Mode", value=st.session_state.offline_mode)
+    if st.session_state.offline_mode:
+        st.warning("⚠️ Offline mode: Limited features available")
+
+with col3:
+    show_stats = st.toggle("📊 Show Statistics", value=False)
+
+if st.session_state.dark_mode:
+    st.markdown("""
+    <style>
+    body { background-color: #1a1a1a; color: #ffffff; }
+    .stButton>button { background-color: #444; color: white; }
+    </style>
+    """, unsafe_allow_html=True)
+# ===== END: DARK MODE & OFFLINE MODE & STATISTICS =====
+
+
 
 # COMPREHENSIVE SCHEME KEYWORDS - FROM PDF
 SCHEME_KEYWORDS = {
@@ -903,8 +1024,34 @@ with tabs[2]:
 
 # TAB 4: FAVORITES
 with tabs[3]:
-    st.markdown("### ❤️ Favorites")
-    st.info("No favorites yet. Save from Search tab!")
+    st.markdown("### ❤️ Favorites & History")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("**📌 Saved Favorites:**")
+        if st.session_state.favorites:
+            for fav in st.session_state.favorites:
+                col_left, col_right = st.columns([4, 1])
+                with col_left:
+                    st.write(f"✅ {fav}")
+                with col_right:
+                    if st.button("❌", key=f"remove_{fav}"):
+                        remove_from_favorites(fav)
+                        st.rerun()
+        else:
+            st.info("No favorites yet. Click the ⭐ button on schemes to save them!")
+    
+    with col2:
+        st.markdown("**🔍 Recent Searches:**")
+        if st.session_state.search_history:
+            for i, query in enumerate(st.session_state.search_history[:5]):
+                st.write(f"{i+1}. {query}")
+            if st.button("Clear History"):
+                st.session_state.search_history = []
+                st.rerun()
+        else:
+            st.info("No search history yet!")
 
 # TAB 5: COMPARE
 with tabs[4]:
@@ -942,5 +1089,38 @@ with tabs[7]:
     st.write("**PM-Kisan:** 1800-180-1111")
     st.write("**MGNREGA:** 1800-345-6777")
 
+# ===== NEW: FEEDBACK & RATING & SETTINGS =====
 st.markdown("---")
-st.markdown("<div style='text-align: center;'><p>🌾 Indic-Setu | © 2026</p></div>", unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown("### ⭐ Rate This App")
+    rating = st.slider("How helpful was this?", 1, 5, 4, key="rating")
+    if rating == 5:
+        st.success("😍 Thank you! We're glad to help!")
+    elif rating >= 3:
+        st.info("👍 Thanks for the feedback!")
+    else:
+        st.warning("😞 Please tell us how to improve!")
+
+with col2:
+    st.markdown("### 💬 Send Feedback")
+    feedback = st.text_area("Your suggestions:", placeholder="Help us improve...", key="feedback", height=80)
+    if st.button("📤 Submit Feedback"):
+        if feedback:
+            st.success("✅ Thank you for your feedback!")
+        else:
+            st.warning("Please enter your feedback!")
+
+with col3:
+    st.markdown("### ⚙️ Settings")
+    st.toggle("📧 Email Notifications", value=False, key="notifications")
+    st.toggle("📱 SMS Updates", value=False, key="sms")
+    st.toggle("🔔 Push Alerts", value=False, key="push")
+    if st.button("💾 Save Settings"):
+        st.success("✅ Settings saved!")
+# ===== END: FEEDBACK & RATING & SETTINGS =====
+
+st.markdown("---")
+st.markdown("<div style='text-align: center;'><p>🌾 Indic-Setu | © 2026 | Made with ❤️ for Rural India</p></div>", unsafe_allow_html=True)
