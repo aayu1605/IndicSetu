@@ -561,10 +561,10 @@ with tab3:
     st.markdown("### 📜 Search History")
     if st.session_state.history:
         st.info(f"You have {len(st.session_state.history)} search(es)")
-        for item in reversed(st.session_state.history[-10:]):
+        for hist_idx, item in enumerate(reversed(st.session_state.history[-10:])):
             with st.expander(f"🔍 {item['query']} ({item['timestamp']})"):
                 st.markdown(f'<div class="result-box">{item.get("answer", "No details")[:300]}...</div>', unsafe_allow_html=True)
-                if st.button("🔊 Listen", key=f"listen_hist_{item['timestamp']}"):
+                if st.button("🔊 Listen", key=f"listen_hist_{hist_idx}_{item['timestamp']}"):
                     speak_with_polly(item.get("answer", ""), st.session_state.language)
     else:
         st.info("📜 No history yet!")
