@@ -244,11 +244,18 @@ if 'language' not in st.session_state:
 # HEADER
 st.markdown(f"<div class='header'><h1>🤖 Indic-Setu</h1><p>Government Schemes Made Simple</p></div>", unsafe_allow_html=True)
 
-# LANGUAGE SELECT
+# LANGUAGE SELECT - FIXED
+lang_list = list(LANGUAGES.keys())
+try:
+    default_index = lang_list.index(st.session_state.language)
+except ValueError:
+    default_index = 0
+    st.session_state.language = 'English'
+
 st.session_state.language = st.selectbox(
     "🌐 Select Your Language:",
-    list(LANGUAGES.keys()),
-    index=list(LANGUAGES.keys()).index(st.session_state.language)
+    lang_list,
+    index=default_index
 )
 
 # TABS
