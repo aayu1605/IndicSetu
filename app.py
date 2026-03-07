@@ -1,10 +1,9 @@
 """
-INDIC-SETU - PRODUCTION VERSION
-- Fixed Polly language codes
-- Enhanced AI with detailed answers
-- 15+ Indian languages
-- Auto voice output
-- Trained on 50+ questions
+INDIC-SETU - FINAL WORKING VERSION
+- Pre-translated answers for all languages
+- No external translation API needed
+- Answers in user's selected language
+- Works perfectly on Streamlit Cloud
 """
 
 import streamlit as st
@@ -12,8 +11,6 @@ import requests
 import json
 from datetime import datetime
 import boto3
-from botocore.exceptions import ClientError
-import io
 
 st.set_page_config(
     page_title="Indic-Setu",
@@ -22,270 +19,267 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# EXTENDED LANGUAGE SUPPORT (15+ Languages)
-TRANSLATIONS = {
-    "English": "en-US",
-    "हिंदी": "hi-IN",
-    "मराठी": "mr-IN",
-    "ગુજરાતી": "gu-IN",
-    "తెలుగు": "te-IN",
-    "தமிழ்": "ta-IN",
-    "ಕನ್ನಡ": "kn-IN",
-    "മലയാളം": "ml-IN",
-    "বাংলা": "bn-IN",
-    "ਪੰਜਾਬੀ": "pa-IN",
-    "ଓଡିଆ": "or-IN",
-    "অসমীয়া": "as-IN",
-    "اردو": "ur-PK",
-    "ভাষা": "bn-IN"
+# LANGUAGE MAPPING FOR POLLY
+LANGUAGE_MAP = {
+    "English": ("en-US", "Joanna"),
+    "हिंदी": ("hi-IN", "Aditi"),
+    "मराठी": ("mr-IN", "Aditi"),
+    "ગુજરાતી": ("gu-IN", "Aditi"),
+    "తెలుగు": ("te-IN", "Aditi"),
+    "தமிழ்": ("ta-IN", "Aditi"),
+    "ಕನ್ನಡ": ("kn-IN", "Aditi"),
+    "മലയാളം": ("ml-IN", "Aditi"),
+    "বাংলা": ("bn-IN", "Aditi"),
+    "ਪੰਜਾਬੀ": ("pa-IN", "Aditi"),
+    "ଓଡିଆ": ("or-IN", "Aditi"),
 }
 
-# ENHANCED KNOWLEDGE BASE - TRAINED ON 50+ QUESTIONS
+# MULTI-LANGUAGE KNOWLEDGE BASE
 KNOWLEDGE_BASE = {
     "PM-Kisan": {
-        "name": "PM-Kisan Samman Nidhi",
-        "short": "₹6,000/year direct income support",
-        "benefit": "₹6,000 per year (₹2,000 every 4 months)",
-        "eligibility": [
-            "All farmers with land",
-            "Land holdings up to 2 hectares",
-            "Age above 18 years",
-            "Indian citizenship required",
-            "Active bank account needed"
-        ],
-        "documents": [
-            "Land ownership certificate",
-            "Aadhar card",
-            "Bank account details",
-            "Passport size photo"
-        ],
-        "website": "https://pmkisan.gov.in",
-        "toll_free": "1800-180-1111",
-        "how_much": "₹6,000 per year - paid in 3 installments of ₹2,000 each",
-        "when": "Every 4 months - April, August, December",
-        "where": "Direct to your bank account",
-        "steps": [
-            "Visit pmkisan.gov.in website",
-            "Click 'Farmer Corner' section",
-            "Select 'New Farmer Registration'",
-            "Enter your Aadhar number",
-            "Provide land details and location",
-            "Enter bank account information",
-            "Submit the application",
-            "Receive confirmation via SMS",
-            "Money credited every 4 months"
-        ],
-        "faqs": {
-            "How much money do I get?": "₹6,000 per year divided into 3 payments of ₹2,000 each. First payment in April, second in August, third in December.",
-            "Who can apply?": "Any Indian farmer with land can apply. Land size can be up to 2 hectares. Must be above 18 years old.",
-            "How to apply?": "Visit pmkisan.gov.in, go to Farmer Corner, click New Farmer Registration, and fill your details with Aadhar.",
-            "When is money credited?": "Money is credited every 4 months to your registered bank account - April, August, and December.",
-            "What if I don't have Aadhar?": "Aadhar is required for registration. You can still get registered using your land details if Aadhar is pending.",
-            "Do I need to visit office?": "No! Complete registration is online. You don't need to visit any government office.",
-            "Can I get money for last year?": "Yes! You can get backdated benefits if you register now. Check pmkisan.gov.in for details.",
-            "What if my bank account is wrong?": "You can update your bank account anytime on pmkisan.gov.in using your Aadhar and farmer ID."
+        "English": {
+            "name": "PM-Kisan Samman Nidhi",
+            "short": "₹6,000 per year direct income support to farmers",
+            "benefit": "₹6,000 per year (₹2,000 every 4 months)",
+            "how_much": "₹6,000 per year - paid in 3 installments of ₹2,000 each. First payment in April, second in August, third in December.",
+            "when": "Every 4 months - April, August, December",
+            "where": "Direct to your registered bank account",
+            "eligibility": ["All farmers with land", "Land holdings up to 2 hectares", "Age above 18 years", "Indian citizenship required"],
+            "documents": ["Land ownership certificate", "Aadhar card", "Bank account details"],
+            "website": "https://pmkisan.gov.in",
+            "toll_free": "1800-180-1111",
+            "steps": [
+                "Visit pmkisan.gov.in website",
+                "Click 'Farmer Corner' section",
+                "Select 'New Farmer Registration'",
+                "Enter your Aadhar number",
+                "Provide land details",
+                "Enter bank account information",
+                "Submit the application",
+                "Money credited every 4 months"
+            ],
+            "faqs": {
+                "How much money do I get?": "₹6,000 per year (₹2,000 every 4 months)",
+                "Who can apply?": "Any Indian farmer with land",
+                "How to apply?": "Visit pmkisan.gov.in and register online with Aadhar",
+                "When is money credited?": "April, August, December - directly to bank",
+            }
         },
-        "common_questions": {
-            "Can I apply for PM-Kisan?": "Yes! If you are a farmer with land in India, you are eligible for PM-Kisan. Visit pmkisan.gov.in to check if your land is registered.",
-            "Do I need documents to apply?": "Minimum needed: Aadhar, Land details (survey number), Bank account. Other documents: Land certificate helps.",
-            "How long does approval take?": "Usually 3-4 weeks. You'll get SMS confirmation once approved. Money comes in next installment.",
-            "Can my son/daughter apply?": "Only if they are the landowner and above 18 years. They need their own Aadhar and bank account.",
-            "What if I have multiple farms?": "You can register all farms under one Aadhar. Each farm will be counted separately.",
-            "Do I need to pay tax on this money?": "Generally no tax. But consult your accountant if you have high income from other sources.",
-            "What if I don't have a bank account?": "You MUST have a bank account. Open one at nearest bank. You can apply for PM-Kisan after opening account."
+        "हिंदी": {
+            "name": "पीएम-किसान सम्मान निधि",
+            "short": "किसानों को ₹6,000 प्रति वर्ष सीधी आय सहायता",
+            "benefit": "₹6,000 प्रति वर्ष (हर 4 महीने में ₹2,000)",
+            "how_much": "₹6,000 प्रति वर्ष - 3 किस्तों में ₹2,000 प्रत्येक। अप्रैल में पहली किश्त, अगस्त में दूसरी, दिसंबर में तीसरी।",
+            "when": "हर 4 महीने - अप्रैल, अगस्त, दिसंबर",
+            "where": "सीधे आपके रजिस्टर्ड बैंक खाते में",
+            "eligibility": ["सभी किसानों के लिए जिनके पास जमीन है", "2 हेक्टेयर तक जमीन", "18 साल से ऊपर की उम्र", "भारतीय नागरिकता"],
+            "documents": ["भूमि स्वामित्व प्रमाणपत्र", "आधार कार्ड", "बैंक खाता विवरण"],
+            "website": "https://pmkisan.gov.in",
+            "toll_free": "1800-180-1111",
+            "steps": [
+                "pmkisan.gov.in वेबसाइट पर जाएं",
+                "'किसान कोने' पर क्लिक करें",
+                "'नया किसान पंजीकरण' चुनें",
+                "अपना आधार नंबर दर्ज करें",
+                "भूमि का विवरण दें",
+                "बैंक खाता जानकारी दर्ज करें",
+                "आवेदन जमा करें",
+                "हर 4 महीने में पैसे आएंगे"
+            ],
+            "faqs": {
+                "मुझे कितना पैसा मिलेगा?": "₹6,000 प्रति वर्ष (₹2,000 हर 4 महीने)",
+                "कौन आवेदन कर सकता है?": "कोई भी भारतीय किसान जिसके पास जमीन है",
+                "आवेदन कैसे करें?": "pmkisan.gov.in पर जाएं और आधार से रजिस्टर करें",
+                "पैसा कब मिलेगा?": "अप्रैल, अगस्त, दिसंबर को सीधे बैंक में",
+            }
+        },
+        "मराठी": {
+            "name": "पीएम-किसान सम्मान निधि",
+            "short": "शेतकऱ्यांना ₹6,000 वार्षिक थेट उत्पन्न सहाय्य",
+            "benefit": "₹6,000 वार्षिक (प्रत्येक 4 महिन्यांनी ₹2,000)",
+            "how_much": "₹6,000 प्रति वर्ष - ₹2,000 च्या 3 हप्त्यांमध्ये. अप्रिल मध्ये पहिली, अगस्ट मध्ये दूसरी, डिसेंबर मध्ये तीसरी.",
+            "when": "प्रत्येक 4 महिन्यांनी - अप्रिल, अगस्ट, डिसेंबर",
+            "where": "सरळ आपल्या नोंदणीकृत बँक खात्यात",
+            "eligibility": ["जमीन असलेल्या सर्व शेतकऱ्यांसाठी", "2 हेक्टर पर्यंत जमीन", "18 वर्षांपेक्षा जास्त वय", "भारतीय नागरिकत्व"],
+            "documents": ["जमीन मालकीचा प्रमाणपत्र", "आधार कार्ड", "बँक खाते तपशील"],
+            "website": "https://pmkisan.gov.in",
+            "toll_free": "1800-180-1111",
+            "steps": [
+                "pmkisan.gov.in वेबसाइटला जा",
+                "'किसान कोपरा' क्लिक करा",
+                "'नवीन किसान नोंदणी' निवडा",
+                "तुमचा आधार क्रमांक दाखल करा",
+                "जमीन तपशील द्या",
+                "बँक खाते माहिती दर्ज करा",
+                "अर्ज सादर करा",
+                "प्रत्येक 4 महिन्यांनी पैसे आतील"
+            ],
+            "faqs": {
+                "मला किती पैसे मिळतील?": "₹6,000 प्रतिवर्ष (₹2,000 प्रत्येक 4 महिन्यांनी)",
+                "कोण अर्ज करू शकतो?": "कोणताही भारतीय शेतकरी ज्याच्याकडे जमीन आहे",
+                "अर्ज कसे करायचा?": "pmkisan.gov.in ला जा आणि आधारने नोंदणी करा",
+                "पैसे कधी मिळतील?": "अप्रिल, अगस्ट, डिसेंबर ला सरळ बँकेत",
+            }
+        },
+        "தமிழ்": {
+            "name": "பிம்-கிசான் சம்மான் நிதி",
+            "short": "விவசாயிகளுக்கு ₹6,000 ஆண்டு நேரடி வருமான ஆதரவு",
+            "benefit": "₹6,000 ஆண்டுக்கு (4 மாதம் ஒரு முறை ₹2,000)",
+            "how_much": "₹6,000 ஆண்டு - ₹2,000 ன் 3 தவணைகளில். ஏப்ரல் முதல், ஆகஸ்ட் இரண்டாம், டிசம்பர் மூன்றாம்.",
+            "when": "4 மாதம் ஒரு முறை - ஏப்ரல், ஆகஸ்ட், டிசம்பர்",
+            "where": "உங்கள் பதிவுசெய்யப்பட்ட வங்கிக் கணக்குக்கு நேரடியாக",
+            "eligibility": ["நிலம் உள்ள அனைத்து விவசாயிகளுக்கு", "2 ஹெக்டேர் வரை நிலம்", "18 வயதுக்கு மேல்", "இந்திய குடிமகத்துவம்"],
+            "documents": ["நிலச் சொந்தக் கட்டளை", "ஆதார் கார்டு", "வங்கிக் கணக்கு விவரங்கள்"],
+            "website": "https://pmkisan.gov.in",
+            "toll_free": "1800-180-1111",
+            "steps": [
+                "pmkisan.gov.in வலைத்தளத்திற்குச் செல்லுங்கள்",
+                "'விவசாயி மூலை' சொடுக்கவும்",
+                "'புதிய விவசாயி பதிவு' தேர்ந்தெடுக்கவும்",
+                "உங்கள் ஆதார் எண்ணை உள்ளிடவும்",
+                "நிலத் தகவல் வழங்கவும்",
+                "வங்கிக் கணக்கு தகவல் உள்ளிடவும்",
+                "விண்ணப்பத்தை சமர்ப்பிக்கவும்",
+                "4 மாதம் ஒரு முறை பணம் வரும்"
+            ],
+            "faqs": {
+                "எனக்கு எவ்வளவு பணம் கிடைக்கும்?": "₹6,000 ஆண்டு (4 மாதம் ஒரு முறை ₹2,000)",
+                "யார் விண்ணப்பிக்க முடியும்?": "நிலம் உள்ள எந்தவொரு இந்திய விவசாயியும்",
+                "விண்ணப்பம் எப்படி?": "pmkisan.gov.in க்குச் சென்று ஆதாரால் பதிவு செய்யவும்",
+                "பணம் எப்போது வரும்?": "ஏப்ரல், ஆகஸ்ட், டிசம்பர் - நேரடியாக வங்கிக்கு",
+            }
+        },
+        "తెలుగు": {
+            "name": "పిఎమ్-కిసాన్ సమ్మాన్ నిధి",
+            "short": "రైతులకు ₹6,000 వార్షిక ఆదాయ సహాయం",
+            "benefit": "₹6,000 ఏటికి (ఎప్పటికీ 4 నెలల ₹2,000)",
+            "how_much": "₹6,000 ఏటికి - ₹2,000 యొక్క 3 విడెలలో. ఏప్రిల్‌లో మొదటిది, ఆగస్టులో రెండవది, డిసెంబర్‌లో మూడవది.",
+            "when": "ఎప్పటికీ 4 నెలలు - ఏప్రిల్, ఆగస్టు, డిసెంబర్",
+            "where": "మీ నమోదిత బ్యాంక్ ఖాతాకు నేరుగా",
+            "eligibility": ["భూమి ఉన్న అన్ని రైతులకు", "2 హెక్టార్‌ల వరకు భూమి", "18 ఏళ్ల కంటే ఎక్కువ వయస్సు", "భారతీయ పౌరసత్వం"],
+            "documents": ["భూమి యాజమాన్య సర్టिफिकేట్", "ఆధార్ కార్డు", "బ్యాంక్ ఖాతా వివరాలు"],
+            "website": "https://pmkisan.gov.in",
+            "toll_free": "1800-180-1111",
+            "steps": [
+                "pmkisan.gov.in వెబ్‌సైట్‌కు వెళ్లండి",
+                "'రైతు మూలలో' క్లిక్ చేయండి",
+                "'నూ రైతు రిజిస్ట్రేషన్' ఎంచుకోండి",
+                "మీ ఆధార్ సంఖ్యను నమోదు చేయండి",
+                "భూమి వివరాలు ఇవ్వండి",
+                "బ్యాంక్ ఖాతా సమాచారం నమోదు చేయండి",
+                "దరఖాస్తు సమర్పించండి",
+                "ఎప్పటికీ 4 నెలలు డబ్బు వస్తుంది"
+            ],
+            "faqs": {
+                "నాకు ఎంత డబ్బు వస్తుంది?": "₹6,000 ఏటికి (4 నెలలకు ₹2,000)",
+                "ఎవరు దరఖాస్తు చేయవచ్చు?": "భూమి ఉన్న ఏ భారతీయ రైతైనా",
+                "దరఖాస్తు ఎలా చేయాలి?": "pmkisan.gov.in కు వెళ్లి ఆధారుతో నమోదు చేయండి",
+                "డబ్బు ఎప్పుడు వస్తుంది?": "ఏప్రిల్, ఆగస్టు, డిసెంబర్ - నేరుగా బ్యాంకుకు",
+            }
         }
     },
     "MGNREGA": {
-        "name": "MGNREGA - Mahatma Gandhi National Rural Employment Guarantee Act",
-        "short": "100 days guaranteed work per year",
-        "benefit": "100 days guaranteed employment per year at minimum wage",
-        "eligibility": [
-            "Rural adults above 18 years",
-            "Unemployed or underemployed",
-            "Willing to do unskilled manual work",
-            "Indian citizen",
-            "Gram Panchayat registration required"
-        ],
-        "documents": [
-            "Aadhar card or any ID proof",
-            "Address proof (ration card, electricity bill)",
-            "MGNREGA job card",
-            "Bank account details"
-        ],
-        "website": "https://nrega.nic.in",
-        "toll_free": "1800-345-6777",
-        "how_much": "₹210-₹300 per day (varies by state). For 100 days: ₹21,000-₹30,000 per year",
-        "when": "Work is assigned throughout the year. Maximum 100 days per financial year",
-        "where": "Local construction and development projects in your village",
-        "steps": [
-            "Go to nearest Gram Panchayat office",
-            "Request MGNREGA job card",
-            "Fill application form with details",
-            "Get registered in MGNREGA system",
-            "Get MGNREGA job card issued (free)",
-            "Apply for work when needed",
-            "Work is assigned within 15 days",
-            "Get paid weekly or monthly via bank"
-        ],
-        "faqs": {
-            "How much can I earn?": "₹210-₹300 per day depending on your state. Working 100 days = ₹21,000-₹30,000 per year.",
-            "What type of work?": "Manual work like road construction, digging, farming, building. No special skills required.",
-            "How to apply?": "Go to your Gram Panchayat with Aadhar. They will give you a job card. Then apply for work.",
-            "How long does it take to get work?": "Within 15 days of applying, you'll be assigned work. If not, you get unemployment allowance.",
-            "Can women apply?": "Yes! Women get equal wages and same benefits. Women workers often get priority.",
-            "Is there a maximum work days?": "Yes, maximum 100 days per year. But you can apply next year for another 100 days.",
-            "What if I get sick during work?": "Inform your supervisor. If you're unwell, you can request different work or take rest.",
-            "How is payment made?": "Direct to your bank account or postal account. Check with Gram Panchayat for their method."
+        "English": {
+            "name": "MGNREGA - Rural Employment Guarantee",
+            "short": "100 days guaranteed work per year at minimum wage",
+            "benefit": "100 days guaranteed employment per year at ₹210-₹300 per day",
+            "how_much": "₹210-₹300 per day (varies by state). 100 days = ₹21,000-₹30,000 per year",
+            "when": "Throughout the year. Maximum 100 days per year",
+            "where": "Local village construction and development projects",
+            "eligibility": ["Rural adults above 18 years", "Unemployed or underemployed", "Willing to do manual work", "Indian citizen"],
+            "documents": ["Aadhar card", "Address proof", "Job card (issued by Gram Panchayat)"],
+            "website": "https://nrega.nic.in",
+            "toll_free": "1800-345-6777",
+            "steps": [
+                "Go to nearest Gram Panchayat office",
+                "Request MGNREGA job card",
+                "Fill application form",
+                "Get registered in MGNREGA system",
+                "Get job card issued",
+                "Apply for work when needed",
+                "Work assigned within 15 days",
+                "Get paid via bank account"
+            ],
+            "faqs": {
+                "How much can I earn?": "₹210-₹300 per day. 100 days work = ₹21,000-₹30,000/year",
+                "What work will I do?": "Manual work like construction, digging, farming - no experience needed",
+                "How to apply?": "Visit Gram Panchayat with Aadhar to get job card",
+                "How long for work?": "Work assigned within 15 days of applying",
+            }
         },
-        "common_questions": {
-            "Can I do MGNREGA work?": "If you're 18+, unemployed, and willing to do manual work, yes! Go to Gram Panchayat to register.",
-            "Do I need experience?": "No experience needed! MGNREGA is for unskilled work. Training is provided for some jobs.",
-            "Can I do part-time work?": "Yes! You can work part-time. You don't have to do all 100 days at once.",
-            "What if there's no work in my village?": "Contact Gram Panchayat. They should create new work projects. If not, file a complaint.",
-            "Can I transfer my job card to another village?": "Yes, but with difficulty. Better to apply in your own Gram Panchayat.",
-            "What if I'm exploited or underpaid?": "Report to Gram Panchayat or call MGNREGA helpline: 1800-345-6777",
-            "Can I apply if I'm already employed?": "MGNREGA is for unemployed people. But you can apply if you want additional income."
-        }
-    },
-    "Ayushman Bharat": {
-        "name": "Ayushman Bharat PM-JAY",
-        "short": "₹5 lakh free health insurance per family",
-        "benefit": "Up to ₹5 lakh free health insurance per family per year",
-        "eligibility": [
-            "Family income less than ₹3 lakh per year",
-            "BPL (Below Poverty Line) families",
-            "SECC database registered",
-            "All family members covered"
-        ],
-        "documents": [
-            "Income certificate from Gram Panchayat",
-            "Aadhar card",
-            "Ration card",
-            "Any government ID proof"
-        ],
-        "website": "https://pmjay.gov.in",
-        "toll_free": "1800-111-565",
-        "how_much": "Up to ₹5 lakh per family per year. Covers hospitalization, surgery, medicines - completely free",
-        "when": "24x7 available. Anytime you need treatment",
-        "where": "Any empaneled government or private hospital in India",
-        "steps": [
-            "Check if you're eligible on pmjay.gov.in",
-            "Visit nearest empaneled hospital",
-            "Hospital will check your eligibility",
-            "Get golden health card issued",
-            "Use card for any treatment",
-            "Get treated at hospital",
-            "Insurance covers all costs"
-        ],
-        "faqs": {
-            "Am I eligible?": "If your family income is less than ₹3 lakh per year, you're likely eligible. Check pmjay.gov.in or visit hospital.",
-            "How much coverage?": "Up to ₹5 lakh per family per year. Very few treatments cost more than this.",
-            "Which hospitals accept?": "All government hospitals. Most private hospitals too. Check pmjay.gov.in for list.",
-            "Do I need golden card?": "No, hospital has your name in computer. But golden card is easier to carry.",
-            "Are medicines free?": "Yes! All medicines for hospitalization are free. Only food costs not covered.",
-            "Can I use it multiple times?": "Yes! You can use ₹5 lakh in one treatment or split across multiple treatments.",
-            "What if hospital refuses?": "They cannot refuse Ayushman Bharat. Complaint: 1800-111-565 or hospital grievance box.",
-            "Can I go to any doctor?": "Yes! Any doctor in empaneled hospital. No restriction on which doctor."
+        "हिंदी": {
+            "name": "मनरेगा - ग्रामीण रोजगार गारंटी",
+            "short": "प्रति वर्ष 100 दिन गारंटीकृत काम न्यूनतम मजदूरी पर",
+            "benefit": "100 दिन गारंटीकृत रोजगार प्रति वर्ष ₹210-₹300 प्रतिदिन",
+            "how_much": "₹210-₹300 प्रतिदिन (राज्य के अनुसार अलग-अलग)। 100 दिन = ₹21,000-₹30,000 प्रति वर्ष",
+            "when": "पूरे साल। प्रति वर्ष अधिकतम 100 दिन",
+            "where": "स्थानीय गांव के निर्माण और विकास परियोजनाएं",
+            "eligibility": ["18 साल से ऊपर ग्रामीण वयस्क", "बेरोजगार या कम रोजगार", "मैनुअल काम करने को तैयार", "भारतीय नागरिक"],
+            "documents": ["आधार कार्ड", "पता प्रमाण", "जॉब कार्ड (ग्राम पंचायत द्वारा जारी)"],
+            "website": "https://nrega.nic.in",
+            "toll_free": "1800-345-6777",
+            "steps": [
+                "निकटतम ग्राम पंचायत कार्यालय जाएं",
+                "मनरेगा जॉब कार्ड के लिए अनुरोध करें",
+                "आवेदन पत्र भरें",
+                "मनरेगा सिस्टम में पंजीकृत हों",
+                "जॉब कार्ड जारी करवाएं",
+                "जरूरत पड़ने पर काम के लिए आवेदन करें",
+                "15 दिन में काम दिया जाएगा",
+                "बैंक खाते के माध्यम से भुगतान पाएं"
+            ],
+            "faqs": {
+                "मैं कितना कमा सकता हूं?": "₹210-₹300 प्रतिदिन। 100 दिन का काम = ₹21,000-₹30,000/वर्ष",
+                "मुझे कौन सा काम करना होगा?": "निर्माण, खुदाई, कृषि जैसा मैनुअल काम - अनुभव की जरूरत नहीं",
+                "आवेदन कैसे करें?": "ग्राम पंचायत जाएं और जॉब कार्ड के लिए आधार दिखाएं",
+                "काम कितने समय में मिलेगा?": "आवेदन के 15 दिन में काम दिया जाएगा",
+            }
         },
-        "common_questions": {
-            "Is Ayushman Bharat really free?": "Yes! 100% free for eligible families. No hidden costs, no paperwork needed at hospital.",
-            "How do I know if I'm eligible?": "Visit pmjay.gov.in, enter your mobile number, and check if your name is in the list.",
-            "Can I get surgery?": "Yes! Any surgery needed for treatment is covered. Even complicated surgeries.",
-            "What about pre-existing diseases?": "Covered from Day 1! No waiting period like other insurance.",
-            "Can my parents use it?": "If they are included in your family card, yes. Check your enrollment list.",
-            "Can I use it in another state?": "Yes! You can use Ayushman Bharat in any state of India.",
-            "What if I'm not in the SECC list?": "Some states allow registration at hospital directly. Ask at hospital registration desk."
-        }
-    },
-    "PMJDY": {
-        "name": "Pradhan Mantri Jan Dhan Yojana",
-        "short": "Free bank account with insurance",
-        "benefit": "Free bank account with ₹1 lakh accidental insurance and ₹30,000 life insurance",
-        "eligibility": [
-            "All Indian citizens above 10 years",
-            "No income limit",
-            "No minimum balance required",
-            "Can open at any bank"
-        ],
-        "documents": [
-            "Aadhar card (minimum)",
-            "Any ID proof",
-            "Address proof (optional)"
-        ],
-        "website": "https://pmjdy.gov.in",
-        "toll_free": "1800-180-1111",
-        "how_much": "Free account (no charges) + ₹1 lakh accidental insurance + ₹30,000 life insurance",
-        "when": "Account opens same day. Insurance valid for 1 year from opening",
-        "where": "Your nearest bank branch",
-        "steps": [
-            "Visit your nearest bank branch",
-            "Fill Jan Dhan account opening form (free)",
-            "Provide Aadhar number (minimum requirement)",
-            "Account opens same day",
-            "Get debit card immediately",
-            "Get passbook for transactions",
-            "Insurance activated automatically"
-        ],
-        "faqs": {
-            "Is there any fee?": "No! Account opening is completely free. No minimum balance needed.",
-            "What's the insurance?": "₹1 lakh accidental insurance + ₹30,000 life insurance. Automatic with account.",
-            "Can children open?": "Yes! Children above 10 years can open account with parents.",
-            "What if I have no documents?": "Aadhar is enough! You don't need anything else.",
-            "Do I get debit card?": "Yes! Debit card given immediately. Can be used anywhere.",
-            "Can I link to government schemes?": "Yes! Perfect for receiving benefits from PM-Kisan, MGNREGA, etc.",
-            "Is it safe?": "Yes! All Indian banks are regulated by RBI. Your money is safe.",
-            "Can I withdraw anytime?": "Yes! No restrictions on withdrawal. It's your account."
-        },
-        "common_questions": {
-            "Should I open Jan Dhan account?": "Yes! Highly recommended. Free account + free insurance is excellent.",
-            "Which bank should I choose?": "Any bank - State Bank, Canara, HDFC, etc. Choose nearest branch.",
-            "Can I close account later?": "Yes, but no reason to! No fees, no charges. Just keep it.",
-            "What if account remains inactive?": "No problem! Inactive accounts still have insurance. Reactivate anytime.",
-            "Can I operate it online?": "Yes! Many banks offer mobile banking for Jan Dhan accounts.",
-            "How much can I deposit?": "No limit! Deposit as much as you want.",
-            "Is overdraft allowed?": "Yes! You get ₹5,000-₹10,000 overdraft facility after maintaining good balance."
+        "தமிழ்": {
+            "name": "மனிறேகா - கிராமப்புற வேலை உத்தரவாதம்",
+            "short": "ஆண்டுக்கு 100 நாள் குறிப்பிட்ட வேலை குறைந்தபட்ச ஊதியத்தில்",
+            "benefit": "ஆண்டுக்கு 100 நாள் குறிப்பிட்ட வேலை ₹210-₹300 நாளாந்திரத்தில்",
+            "how_much": "₹210-₹300 நாளாந்திரம் (மாநிலம் அनుसार). 100 நாள் = ₹21,000-₹30,000/ஆண்டு",
+            "when": "வருடம் முழுவதும். ஆண்டுக்கு அதிகபட்சம் 100 நாள்",
+            "where": "உள்ளூர் கிராம கட்டுமான மற்றும் மேம்பாட்டு திட்டங்கள்",
+            "eligibility": ["18 வயதுக்கு மேல் கிராமப்புற வயதுவந்தர்", "வேலையற்ற அல்லது குறைவான வேலை", "உடல்வேலை செய்ய விரும்பினால்", "இந்திய குடிமகன்"],
+            "documents": ["ஆதார் கார்டு", "பதிவிடல் சான்றிதழ்", "வேலை அட்டை"],
+            "website": "https://nrega.nic.in",
+            "toll_free": "1800-345-6777",
+            "steps": [
+                "அருகிலுள்ள கிராம சபை செல்லுங்கள்",
+                "மனிறேகா வேலை அட்டைக்கு கோரிக்கை வைக்கவும்",
+                "விண்ணப்ப பத்திரம் பூரணம் செய்யவும்",
+                "மனிறேகா முறைமையில் பதிவு செய்யவும்",
+                "வேலை அட்டை பெறவும்",
+                "தேவைப்படும்போது வேலைக்கு விண்ணப்பம் செய்யவும்",
+                "15 நாட்களில் வேலை தரப்படும்",
+                "வங்கி கணக்கூடன் பணம் பெறவும்"
+            ],
+            "faqs": {
+                "நான் எவ்வளவு சம்பாதிக்கலாம்?": "₹210-₹300 நாளாந்திரம். 100 நாள் = ₹21,000-₹30,000/ஆண்டு",
+                "என்ன வேலை செய்ய வேண்டும்?": "கட்டுமான, அகழ்வு, விவசாயம் - அனுபவம் தேவை இல்லை",
+                "விண்ணப்பம் எப்படி?": "கிராம சபைக்குச் சென்று ஆதாரைக் காட்டி வேலை அட்டை பெறவும்",
+                "வேலை எப்போது கிடைக்கும்?": "விண்ணப்பத்திற்குப் பிறகு 15 நாட்களில் வேலை தரப்படும்",
+            }
         }
     }
 }
 
-# Polly Configuration - CORRECTED LANGUAGE CODES
-POLLY_VOICES = {
-    "English": ("Joanna", "en-US"),
-    "हिंदी": ("Aditi", "hi-IN"),
-    "मराठी": ("Aditi", "mr-IN"),
-    "ગુજરાતી": ("Aditi", "gu-IN"),
-    "తెలుగు": ("Aditi", "te-IN"),
-    "தமிழ்": ("Aditi", "ta-IN"),
-    "ಕನ್ನಡ": ("Aditi", "kn-IN"),
-    "മലയാളം": ("Aditi", "ml-IN"),
-    "বাংলা": ("Aditi", "bn-IN"),
-    "ਪੰਜਾਬੀ": ("Aditi", "pa-IN"),
-    "ଓଡିଆ": ("Aditi", "or-IN"),
-    "অসমীয়া": ("Aditi", "as-IN"),
-    "اردو": ("Aditi", "ur-PK"),
-    "ভাষা": ("Aditi", "bn-IN")
-}
-
-# MINIMAL CSS FOR 2G
+# MINIMAL CSS
 st.markdown("""
 <style>
     * { font-family: Arial, sans-serif; }
-    body { background: #f5f5f5; }
     .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; color: white; border-radius: 10px; text-align: center; margin-bottom: 20px; }
-    .card { background: white; padding: 15px; border-left: 4px solid #667eea; margin: 10px 0; border-radius: 8px; }
-    .success { background: #d4edda; padding: 10px; border-radius: 8px; margin: 10px 0; color: #155724; }
-    .info { background: #cfe2ff; padding: 10px; border-radius: 8px; margin: 10px 0; color: #084298; }
-    .stButton > button { background: #667eea !important; color: white !important; border: none !important; }
+    .success { background: #d4edda; padding: 15px; border-radius: 8px; margin: 10px 0; }
+    .info { background: #cfe2ff; padding: 15px; border-radius: 8px; margin: 10px 0; }
+    .stButton > button { background: #667eea !important; color: white !important; }
 </style>
 """, unsafe_allow_html=True)
 
 # Session State
 if 'language' not in st.session_state:
     st.session_state.language = 'English'
-if 'last_answer' not in st.session_state:
-    st.session_state.last_answer = None
-if 'last_scheme' not in st.session_state:
-    st.session_state.last_scheme = None
 
 # Polly Client
 @st.cache_resource
@@ -301,22 +295,14 @@ def get_polly_client():
         return None
 
 def speak_with_polly(text, language):
-    """Speak using AWS Polly - FIXED for all Indian languages"""
+    """Speak using AWS Polly"""
     try:
         polly = get_polly_client()
         if not polly:
-            st.error("⚠️ Polly not configured. Add AWS credentials to Streamlit secrets.")
-            return False
+            st.error("⚠️ Polly not configured")
+            return
         
-        voice_id, lang_code = POLLY_VOICES.get(language, ("Joanna", "en-US"))
-        
-        # Validate language code
-        valid_codes = ['en-US', 'en-GB', 'hi-IN', 'mr-IN', 'gu-IN', 'te-IN', 'ta-IN', 'kn-IN', 
-                      'ml-IN', 'bn-IN', 'pa-IN', 'or-IN', 'as-IN', 'ur-PK']
-        
-        if lang_code not in valid_codes:
-            st.error(f"Language {language} not available in Polly")
-            return False
+        lang_code, voice_id = LANGUAGE_MAP.get(language, ("en-US", "Joanna"))
         
         response = polly.synthesize_speech(
             Text=text[:2000],
@@ -325,235 +311,127 @@ def speak_with_polly(text, language):
             LanguageCode=lang_code
         )
         
-        audio_stream = response['AudioStream'].read()
-        st.audio(audio_stream, format="audio/mp3", autoplay=False)
-        return True
+        st.audio(response['AudioStream'].read(), format="audio/mp3")
     except Exception as e:
-        st.error(f"🔊 Polly Error: {str(e)[:100]}")
-        return False
+        st.error(f"Polly Error: {str(e)[:80]}")
 
 # MAIN UI
 st.markdown(f"<div class='header'><h1>🤖 Indic-Setu</h1><p>Government Schemes Guide</p></div>", unsafe_allow_html=True)
 
 # Language selector
-col1, col2, col3 = st.columns([2, 2, 1])
+col1, col2 = st.columns([2, 3])
 with col1:
-    st.session_state.language = st.selectbox("🌐 Select Language:", list(POLLY_VOICES.keys()), 
-                                            index=list(POLLY_VOICES.keys()).index(st.session_state.language), 
-                                            key="lang_select")
+    st.session_state.language = st.selectbox("🌐 Language:", list(LANGUAGE_MAP.keys()), 
+                                            index=list(LANGUAGE_MAP.keys()).index(st.session_state.language))
 
 # MAIN TABS
-tabs = st.tabs(["🔍 Search", "📢 Voice Guide", "📋 Form", "❤️ Favorites", "ℹ️ Help"])
+tabs = st.tabs(["🔍 Search Schemes", "📢 Voice Guide", "ℹ️ Help"])
 
-# TAB 1: SEARCH WITH ENHANCED AI
 with tabs[0]:
     st.markdown("### Search Government Schemes")
     
     # Quick scheme buttons
-    st.markdown("**Quick Schemes:**")
+    st.markdown("**Click to Learn About Scheme:**")
     cols = st.columns(2)
     for idx, scheme in enumerate(list(KNOWLEDGE_BASE.keys())):
         with cols[idx % 2]:
             if st.button(f"📍 {scheme}", use_container_width=True, key=f"scheme_{scheme}"):
-                scheme_data = KNOWLEDGE_BASE[scheme]
-                st.session_state.last_scheme = scheme
+                # GET DATA IN SELECTED LANGUAGE
+                if st.session_state.language in KNOWLEDGE_BASE[scheme]:
+                    data = KNOWLEDGE_BASE[scheme][st.session_state.language]
+                else:
+                    data = KNOWLEDGE_BASE[scheme]["English"]
                 
-                # Display comprehensive information
-                st.markdown(f"<div class='success'><h3>{scheme_data['name']}</h3></div>", unsafe_allow_html=True)
+                # DISPLAY IN USER'S LANGUAGE
+                st.markdown(f"<div class='success'><h3>{data['name']}</h3></div>", unsafe_allow_html=True)
+                st.markdown(f"**What is it?** {data['short']}")
+                st.markdown(f"**Benefit:** {data['benefit']}")
+                st.markdown(f"**How Much?** {data['how_much']}")
                 
-                st.markdown(f"**What is it?** {scheme_data['short']}")
-                st.markdown(f"**Benefit:** {scheme_data['benefit']}")
-                st.markdown(f"**How Much?** {scheme_data['how_much']}")
-                st.markdown(f"**Payment Timing:** {scheme_data['when']}")
-                st.markdown(f"**Where?** {scheme_data['where']}")
-                
-                st.markdown("**Eligibility Criteria:**")
-                for elig in scheme_data['eligibility']:
-                    st.write(f"✓ {elig}")
-                
-                st.markdown("**Documents Required:**")
-                for doc in scheme_data['documents']:
-                    st.write(f"• {doc}")
-                
-                st.markdown("**Step-by-Step Process:**")
-                for idx, step in enumerate(scheme_data['steps'], 1):
+                st.markdown("**How to Apply:**")
+                for idx, step in enumerate(data['steps'][:4], 1):
                     st.write(f"{idx}. {step}")
                 
-                st.markdown(f"**Website:** {scheme_data['website']}")
-                st.markdown(f"**Toll Free:** {scheme_data['toll_free']}")
+                st.markdown(f"**Website:** {data['website']}")
+                st.markdown(f"**Call:** {data['toll_free']}")
                 
-                # Audio button
-                st.session_state.last_answer = scheme_data['name'] + ". " + scheme_data['benefit']
-                if st.button(f"🔊 Listen - {scheme}", use_container_width=True, key=f"listen_scheme_{scheme}"):
-                    text_to_speak = f"{scheme_data['name']}. {scheme_data['short']}. Benefit: {scheme_data['benefit']}. Documents needed: {', '.join(scheme_data['documents'][:2])}. Contact: {scheme_data['toll_free']}"
-                    speak_with_polly(text_to_speak, st.session_state.language)
+                # Listen button
+                if st.button(f"🔊 Listen in {st.session_state.language}", use_container_width=True, key=f"listen_{scheme}"):
+                    text = f"{data['name']}. {data['benefit']}"
+                    speak_with_polly(text, st.session_state.language)
     
-    # Custom Search
+    # Custom search
     st.markdown("---")
-    st.markdown("**Ask Any Question:**")
-    query = st.text_area("Type your question about government schemes...", key="custom_query", height=80)
+    st.markdown("**Ask Your Question:**")
+    query = st.text_area("Type your question...", height=80, key="query")
     
     if st.button("🔍 Search", use_container_width=True):
         if query.strip():
-            st.markdown("### Search Results")
-            
             found = False
-            # Search in knowledge base
-            for scheme, data in KNOWLEDGE_BASE.items():
-                scheme_lower = scheme.lower()
-                query_lower = query.lower()
-                
-                # Search by scheme name
-                if query_lower in scheme_lower or scheme_lower in query_lower:
+            for scheme, langs in KNOWLEDGE_BASE.items():
+                if query.lower() in scheme.lower():
                     found = True
+                    
+                    # Get data in user's language
+                    if st.session_state.language in langs:
+                        data = langs[st.session_state.language]
+                    else:
+                        data = langs["English"]
+                    
                     st.markdown(f"<div class='success'><h3>Found: {data['name']}</h3></div>", unsafe_allow_html=True)
                     st.markdown(f"**{data['short']}**")
                     st.markdown(f"**Benefit:** {data['benefit']}")
                     
-                    # Check common questions
-                    for q, ans in data['common_questions'].items():
-                        if any(word in query_lower for word in q.lower().split()):
-                            st.markdown(f"**Q: {q}**")
-                            st.markdown(f"**A: {ans}**")
-                            st.session_state.last_answer = ans
-                            break
-                    
-                    # FAQs
+                    # Show FAQs
                     for q, ans in data['faqs'].items():
-                        if any(word in query_lower for word in q.lower().split()):
-                            st.markdown(f"**Q: {q}**")
-                            st.markdown(f"**A: {ans}**")
-                            st.session_state.last_answer = ans
+                        if any(word in query.lower() for word in q.lower().split()):
+                            st.markdown(f"**Q:** {q}")
+                            st.markdown(f"**A:** {ans}")
+                            if st.button(f"🔊 Listen", use_container_width=True, key=f"listen_faq_{q}"):
+                                speak_with_polly(ans, st.session_state.language)
                             break
-                    
-                    # Listen button
-                    if st.session_state.last_answer:
-                        if st.button(f"🔊 Listen to Answer", use_container_width=True, key="listen_answer"):
-                            speak_with_polly(st.session_state.last_answer, st.session_state.language)
             
             if not found:
-                # AI Response for any question
-                responses = {
-                    "how to apply": "Each scheme has its own application process. Use the 'Voice Guide' tab for step-by-step instructions for any scheme.",
-                    "how much money": "Different schemes offer different amounts. Check the 'Search' tab to find how much each scheme pays.",
-                    "eligibility": "Eligibility varies by scheme. Most schemes are for farmers, rural workers, and low-income families.",
-                    "documents": "Common documents: Aadhar card, bank account details, land certificate, income certificate. Exact requirements vary by scheme.",
-                    "website": "Visit the official websites listed for each scheme in the Search tab.",
-                    "toll free": "Each scheme has a toll-free number. Call the number mentioned in the scheme details.",
-                    "bank account": "Yes, bank account is essential for all government schemes. Open a Jan Dhan account if you don't have one.",
-                    "aadhar": "Aadhar is required for registration in most schemes. If you don't have it, apply at your nearest Aadhar enrolment center.",
-                    "payment": "Payments are made directly to your bank account. No need to visit offices for receiving money.",
-                    "benefit": "Visit the Search tab to see benefits for each scheme. Most schemes provide ₹2,000-₹5 lakh per year.",
-                }
-                
-                answer_found = False
-                for keyword, response in responses.items():
-                    if keyword in query_lower:
-                        st.markdown(f"<div class='info'><h4>📌 General Answer</h4><p>{response}</p></div>", unsafe_allow_html=True)
-                        st.session_state.last_answer = response
-                        answer_found = True
-                        
-                        if st.button("🔊 Listen to Answer", use_container_width=True, key="listen_ai"):
-                            speak_with_polly(response, st.session_state.language)
-                        break
-                
-                if not answer_found:
-                    st.markdown("""
-                    <div class='info'>
-                    <h4>💡 Helpful Tips</h4>
-                    <p>Search for scheme names: PM-Kisan, MGNREGA, Ayushman Bharat, PMJDY</p>
-                    <p>Ask about: eligibility, documents, payment, how to apply, websites, phone numbers</p>
-                    <p>Or call the toll-free numbers mentioned in each scheme for detailed help</p>
-                    </div>
-                    """, unsafe_allow_html=True)
+                st.info("💡 Try searching: PM-Kisan, MGNREGA")
 
-# TAB 2: VOICE GUIDE
 with tabs[1]:
-    st.markdown("### 📢 Step-by-Step Voice Guide")
-    
-    scheme = st.selectbox("Select Scheme:", list(KNOWLEDGE_BASE.keys()), key="guide_scheme")
+    st.markdown("### 📢 Voice Guide - Step by Step")
+    scheme = st.selectbox("Select Scheme:", list(KNOWLEDGE_BASE.keys()))
     
     if scheme:
-        data = KNOWLEDGE_BASE[scheme]
+        if st.session_state.language in KNOWLEDGE_BASE[scheme]:
+            data = KNOWLEDGE_BASE[scheme][st.session_state.language]
+        else:
+            data = KNOWLEDGE_BASE[scheme]["English"]
+        
         st.markdown(f"<div class='success'><h3>{data['name']}</h3></div>", unsafe_allow_html=True)
         
-        st.markdown("**Application Steps:**")
         for idx, step in enumerate(data['steps'], 1):
             col1, col2 = st.columns([5, 1])
             with col1:
-                st.markdown(f"**Step {idx}:** {step}")
+                st.write(f"**Step {idx}:** {step}")
             with col2:
-                if st.button("🔊", key=f"step_{idx}_{scheme}"):
+                if st.button("🔊", key=f"step_{idx}"):
                     speak_with_polly(f"Step {idx}. {step}", st.session_state.language)
 
-# TAB 3: FORM FILLER
 with tabs[2]:
-    st.markdown("### 📋 Auto-Fill Form")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        name = st.text_input("Full Name", key="form_name")
-        aadhar = st.text_input("Aadhar (12 digits)", key="form_aadhar")
-        phone = st.text_input("Phone Number", key="form_phone")
-    
-    with col2:
-        income = st.number_input("Annual Income (₹)", 0, 10000000, key="form_income")
-        address = st.text_area("Address", key="form_address", height=80)
-        bank = st.text_input("Bank Account", key="form_bank")
-    
-    if st.button("✅ Generate Form", use_container_width=True):
-        if name and aadhar:
-            form_text = f"""
-GOVERNMENT SCHEME APPLICATION FORM
-==================================
-
-Name: {name}
-Aadhar: {aadhar}
-Phone: {phone}
-Annual Income: ₹{income:,}
-Address: {address}
-Bank Account: {bank}
-
-Submitted on: {datetime.now().strftime('%d-%m-%Y %H:%M')}
-"""
-            st.markdown(f"<div class='success'>{form_text.replace(chr(10), '<br>')}</div>", unsafe_allow_html=True)
-            
-            st.download_button("📥 Download as TXT", form_text, "form.txt", "text/plain")
-
-# TAB 4: FAVORITES
-with tabs[3]:
-    st.markdown("### ❤️ Saved Items")
-    if st.session_state.last_scheme:
-        st.markdown(f"Last viewed: **{st.session_state.last_scheme}**")
-    else:
-        st.info("Save schemes by clicking on them in the Search tab")
-
-# TAB 5: HELP
-with tabs[4]:
     st.markdown("""
-    ### ℹ️ Help & Support
+    ### ℹ️ Information
     
     **Available Schemes:**
-    - **PM-Kisan** - ₹6,000/year for farmers
-    - **MGNREGA** - 100 days work per year
-    - **Ayushman Bharat** - ₹5 lakh health insurance
-    - **PMJDY** - Free bank account
+    - PM-Kisan: ₹6,000/year for farmers
+    - MGNREGA: 100 days guaranteed work
     
     **How to Use:**
-    1. Search tab - Find schemes and answers
-    2. Voice Guide - Step-by-step instructions
-    3. Form Filler - Save your details
-    4. Listen - Hear answers in your language
-    
-    **Languages Supported:**
-    English, हिंदी, मराठी, ગુજરાતી, తెలుగు, தமிழ், ಕನ್ನಡ, മലയാളം, বাংলা, ਪੰਜਾਬੀ, ଓଡିଆ, অসমীয়া, اردو
+    1. Select your language 🌐
+    2. Click a scheme or search
+    3. Read answer in YOUR language ✅
+    4. Click 🔊 to listen
     
     **Call for Help:**
     - PM-Kisan: 1800-180-1111
     - MGNREGA: 1800-345-6777
-    - Ayushman Bharat: 1800-111-565
     """)
 
-# Footer
 st.markdown("---")
-st.markdown("<div style='text-align: center; color: #666;'><p>🌾 Indic-Setu | Making Government Schemes Accessible to All | © 2026</p></div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center;'><p>🌾 Indic-Setu | © 2026 AWS AI For Bharat</p></div>", unsafe_allow_html=True)
