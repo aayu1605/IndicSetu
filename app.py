@@ -287,21 +287,42 @@ st.session_state.language = st.selectbox(
 # TABS
 tabs = st.tabs(["🔍 Search", "📢 Guide", "📋 Form", "❤️ Favorites", "📊 Compare", "⭐ Stories", "💰 Benefits", "📞 Contacts"])
 
+# COMPREHENSIVE SCHEME KEYWORDS - FROM PDF
+SCHEME_KEYWORDS = {
+    "PMEGP": ["pradhan mantri employment", "pmegp", "pradhan mantri", "employment generation"],
+    "SFURTI": ["sfurti", "traditional industries", "cluster development"],
+    "MSE-CDP": ["mse-cdp", "cluster development", "msme cluster"],
+    "Technology Upgradation": ["technology", "upgrade", "equipment", "modernization"],
+    "Raw Material": ["raw material", "rawmaterial", "material assistance"],
+    "Marketing": ["marketing", "market", "mda", "trade fair"],
+    "Coir": ["coir", "coconut"],
+    "IDEA": ["idea", "agriculture", "agro"],
+    "NYKS": ["nyks", "youth", "training"],
+    "Solar": ["solar", "power", "renewable"],
+    "Women": ["women", "mahila", "female entrepreneur"],
+    "SC/ST": ["sc", "st", "scheduled", "tribe", "caste"],
+    "Handicap": ["handicap", "disabled", "disability"],
+    "J&K": ["jammu", "kashmir", "j&k"],
+    "Mudra": ["mudra", "loan", "credit", "bank"],
+    "NRLM": ["nrlm", "self help", "shg", "women group"],
+    "STEP": ["step", "training", "employment", "skill"],
+}
+
 # ANSWER ENGINE - AI ANSWERS ANY QUESTION
 def answer_question(question, lang):
     """AI engine to answer any government scheme question"""
     question_lower = question.lower()
     
     # PM-Kisan keywords
-    pm_kisan_keywords = ['pm-kisan', 'kishan', 'kisan', '6000', 'farmer', 'किसान', 'खेडूत', 'кисан', 'விவசாயி', 'రైతు', 'ખેડૂત', 'पीएम-किसान']
+    pm_kisan_keywords = ['pm-kisan', 'kishan', 'kisan', '6000', 'farmer', 'किसान', 'खेडूत', 'விவசாயी', 'రైతు', 'ખેડૂત', 'पीएम-किसान', 'farming']
     
     # MGNREGA keywords  
-    mgnrega_keywords = ['mgnrega', 'manrega', 'rural employment', '100 days', 'work', '210', '300', 'मनरेगा', 'रोजगार', 'काम']
+    mgnrega_keywords = ['mgnrega', 'manrega', 'rural employment', '100 days', 'work', '210', '300', 'मनरेगा', 'रोजगार', 'काम', 'labour', 'job']
     
     # MSME keywords
-    msme_keywords = ['msme', 'small business', 'startup', 'enterprise', 'entrepreneur', 'small medium', 'udyami', 'एमएसएमई', 'छोटा व्यवसाय', 'स्टार्टअप', 'उद्यमी', 'उद्यम', 'business setup', 'credit support', 'marketing']
+    msme_keywords = ['msme', 'small business', 'startup', 'enterprise', 'entrepreneur', 'small medium', 'udyami', 'एमएसएमई', 'छोटा व्यवसाय', 'स्टार्टअप', 'उद्यमी', 'उद्यम', 'business setup', 'credit support', 'marketing', 'scheme']
     
-    # Check which scheme
+    # Check which main category
     if any(kw in question_lower for kw in pm_kisan_keywords):
         scheme = "PM-Kisan"
     elif any(kw in question_lower for kw in mgnrega_keywords):
@@ -309,7 +330,81 @@ def answer_question(question, lang):
     elif any(kw in question_lower for kw in msme_keywords):
         scheme = "MSME"
     else:
-        return None
+        # Check if it's any PDF scheme
+        for scheme_name, keywords in SCHEME_KEYWORDS.items():
+            if any(kw in question_lower for kw in keywords):
+                scheme = scheme_name
+                break
+        else:
+            return None
+    
+    # Special handling for PDF schemes
+    if scheme not in SCHEMES:
+        # Return generic PDF scheme info
+        return f"""**{scheme} Scheme**
+
+This is a government scheme for enterprise development, skill training, or business support.
+
+**To get detailed information:**
+📞 Call Udyami Helpline: 1800-180-6763
+🌐 Visit: https://msme.gov.in
+⏰ Timing: 6 PM to 10 PM (Hindi/English)
+
+**You can ask about:**
+- Eligibility criteria
+- Financial assistance amount
+- Documents required
+- Application process
+- Contact details
+
+Please call the helpline for comprehensive details about this specific scheme."""
+    
+    # Get scheme data from SCHEMES dict
+    scheme_data = SCHEMES[scheme]
+    if lang in scheme_data:
+        data = scheme_data[lang]
+    else:
+        data = scheme_data["English"]
+    
+    # Answer different question types
+    if any(word in question_lower for word in ['how much', 'कितना', 'எவ்வளவு', 'किती', 'કેટલું', 'ఎంత', 'amount', 'loan', 'grant', 'money']):
+        return f"**{data['name']}**: {data['how_much']}"
+    
+    elif any(word in question_lower for word in ['eligible', 'who can', 'पात्र', 'தகுதி', 'योग्य', 'પાત્ર', 'అర్హత', 'can apply', 'apply', 'qualify']):
+        return f"**Eligibility**: {data['eligibility']}\n\n**Helpline**: {data['helpline']}"
+    
+    elif any(word in question_lower for word in ['document', 'paper', 'कागज', 'दस्तावेज़', 'ஆவணம்', 'कागद', 'દસ્તાવેજ', 'దస్తావేజు', 'requirement', 'require']):
+        return f"**Documents Needed**: {data['documents']}\n\n**Helpline**: {data['helpline']}"
+    
+    elif any(word in question_lower for word in ['apply', 'how', 'कैसे', 'എങ്ങനെ', 'आवेदन', 'अर्ज', 'process', 'registration', 'helpline', 'contact']):
+        steps_text = "\n".join([f"{i}. {step}" for i, step in enumerate(data['steps'][:5], 1)])
+        return f"**How to Apply**:\n{steps_text}\n\n**Helpline**: {data['helpline']}"
+    
+    elif any(word in question_lower for word in ['when', 'कब', 'எப்போது', 'कधी', 'ક્યારે', 'ఎప్పుడు', 'timing', 'payment', 'schedule']):
+        return f"**Details**: {data['how_much']}\n**Helpline**: {data['helpline']}"
+    
+    elif any(word in question_lower for word in ['contact', 'call', 'phone', 'फोन', 'ఫోన్', 'कॉल', 'number', 'helpline', 'website']):
+        return f"**Helpline**: {data['helpline']} | **Website**: {data['website']}"
+    
+    elif any(word in question_lower for word in ['scheme', 'योजना', 'schemes', 'benefits', 'laabh', 'लाभ', 'advantage', 'benefit']):
+        if 'schemes' in data:
+            return f"**{data['name']}**\n**Available Support**: {data['schemes']}\n**Helpline**: {data['helpline']}"
+        else:
+            return f"**{data['name']}**\n{data['about']}\n**Helpline**: {data['helpline']}"
+    
+    elif any(word in question_lower for word in ['about', 'what', 'क्या', 'എന്ത്', 'काय', 'શું', 'ఏమిటి', 'information', 'details']):
+        return f"**{data['name']}**\n{data['about']}\n**Helpline**: {data['helpline']}"
+    
+    else:
+        # Default: show full info
+        return f"""**{data['name']}**
+        
+**About:** {data['about']}
+**Benefit:** {data['benefit']}
+**Amount:** {data['how_much']}
+**Eligibility:** {data['eligibility']}
+**Documents:** {data['documents']}
+**Helpline:** {data['helpline']}"""
     
     # Get scheme data
     scheme_data = SCHEMES[scheme]
