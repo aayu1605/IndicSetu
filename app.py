@@ -1,13 +1,14 @@
 """
-INDIC-SETU - FINAL VERSION WITH TRANSLATION (FIXED)
-Uses googletrans library (correct import)
+INDIC-SETU - FINAL SIMPLE VERSION
+No external translation library needed
+Lambda returns answers directly
+Simple working solution
 """
 
 import streamlit as st
 import requests
 import json
 from datetime import datetime
-from collections import Counter
 
 st.set_page_config(
     page_title="Indic-Setu | सरकारी योजनाएं",
@@ -16,7 +17,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Language Translations (COMPLETE)
+# Language Translations (UI ONLY)
 TRANSLATIONS = {
     "English": {
         "title": "Indic-Setu",
@@ -180,18 +181,18 @@ TRANSLATIONS = {
     }
 }
 
-# Language to Code Mapping (for translation)
+# Language codes for Web Speech API
 LANGUAGE_CODES = {
-    "English": "en",
-    "हिंदी": "hi",
-    "ગુજરાતી": "gu",
-    "मराठी": "mr",
-    "தமிழ்": "ta",
-    "తెలుగు": "te",
-    "ಕನ್ನಡ": "kn",
-    "বাংলা": "bn",
-    "ਪੰਜਾਬੀ": "pa",
-    "اردو": "ur"
+    "English": "en-US",
+    "हिंदी": "hi-IN",
+    "ગુજરાતી": "gu-IN",
+    "मराठी": "mr-IN",
+    "தமிழ்": "ta-IN",
+    "తెలుగు": "te-IN",
+    "ಕನ್ನಡ": "kn-IN",
+    "বাংলা": "bn-IN",
+    "ਪੰਜਾਬੀ": "pa-IN",
+    "اردو": "ur-PK"
 }
 
 # Advanced CSS
@@ -246,20 +247,6 @@ if 'history' not in st.session_state:
 
 def t(key):
     return TRANSLATIONS.get(st.session_state.language, TRANSLATIONS['English']).get(key, key)
-
-def translate_text(text, target_lang):
-    """Translate text to target language using googletrans"""
-    if target_lang == "English":
-        return text
-    
-    try:
-        from googletrans import Translator
-        translator = Translator()
-        result = translator.translate(text, src_language='en', dest_language=LANGUAGE_CODES.get(target_lang, 'en'))
-        return result['text']
-    except Exception as e:
-        st.warning(f"⚠️ Translation unavailable. Showing English.")
-        return text
 
 API_URL = "https://i66i3hu9a4.execute-api.us-east-1.amazonaws.com/prod/query"
 
@@ -379,9 +366,9 @@ with tab1:
     with col4:
         st.button("📊 Compare", use_container_width=True, key="comp_main")
     
-    # SEARCH LOGIC WITH TRANSLATION
+    # SEARCH LOGIC
     if search_btn and query.strip():
-        with st.spinner("🔄 Searching & Translating..."):
+        with st.spinner("🔄 Searching..."):
             try:
                 payload = {
                     "query": query,
@@ -409,21 +396,15 @@ with tab1:
                     else:
                         result = api_response
                     
-                    # GET ANSWER IN ENGLISH
-                    answer_english = result.get('answer', 'No information available')
-                    
-                    # TRANSLATE IF NOT ENGLISH
-                    if st.session_state.language != "English":
-                        answer = translate_text(answer_english, st.session_state.language)
-                    else:
-                        answer = answer_english
+                    # GET ANSWER (Lambda returns in user's language)
+                    answer = result.get('answer', 'No information available')
                     
                     # Add to history
                     st.session_state.history.append({
                         "query": query,
                         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
                         "result": result,
-                        "answer_translated": answer
+                        "answer": answer
                     })
                     
                     # Display Results
@@ -438,17 +419,21 @@ with tab1:
                     st.markdown(f"### {t('detailed_info')}")
                     st.markdown(f'<div class="result-box">{answer}</div>', unsafe_allow_html=True)
                     
-                    # Voice Output - TRANSLATED
+                    # Voice Output - Using Web Speech API
                     col1, col2 = st.columns([4, 1])
                     with col2:
                         if st.button(t('listen'), use_container_width=True, key="listen_btn"):
-                            lang_code = LANGUAGE_CODES.get(st.session_state.language, 'en')
+                            lang_code = LANGUAGE_CODES.get(st.session_state.language, 'en-US')
+                            # Use Web Speech API (no Polly needed)
                             st.markdown(f"""
                             <script>
-                            var text = `{answer[:500].replace(chr(34), "").replace(chr(96), "")}`;
+                            var text = `{answer[:1000].replace(chr(34), '').replace(chr(96), '')}`;
                             var utterance = new SpeechSynthesisUtterance(text);
-                            utterance.lang = '{lang_code}-IN';
+                            utterance.lang = '{lang_code}';
                             utterance.rate = 0.9;
+                            utterance.pitch = 1.0;
+                            utterance.volume = 1.0;
+                            window.speechSynthesis.cancel();
                             window.speechSynthesis.speak(utterance);
                             </script>
                             """, unsafe_allow_html=True)
@@ -473,7 +458,7 @@ with tab1:
                             st.session_state.favorites.append({
                                 "query": query,
                                 "result": result,
-                                "answer_translated": answer,
+                                "answer": answer,
                                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
                                 "occupation": occupation,
                                 "income": income
@@ -497,7 +482,7 @@ with tab2:
             with st.expander(f"💾 {fav['query']} ({fav['timestamp']})"):
                 st.write(f"**Occupation:** {fav['occupation']}")
                 st.write(f"**Income:** ₹{fav['income']:,}")
-                st.markdown(f'<div class="result-box">{fav.get("answer_translated", fav["result"].get("answer", "No details"))[:400]}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="result-box">{fav.get("answer", fav["result"].get("answer", "No details"))[:400]}</div>', unsafe_allow_html=True)
                 
                 col1, col2 = st.columns(2)
                 with col1:
@@ -507,7 +492,7 @@ with tab2:
                         st.rerun()
                 with col2:
                     if st.button("📋 Full", key=f"full_{idx}"):
-                        st.write(fav.get("answer_translated", fav["result"].get("answer", "No details")))
+                        st.write(fav.get("answer", fav["result"].get("answer", "No details")))
     else:
         st.info("❤️ No favorites saved yet! Save one above.")
 
@@ -520,7 +505,7 @@ with tab3:
         st.info(f"You have {len(st.session_state.history)} search(es)")
         for item in reversed(st.session_state.history[-10:]):
             with st.expander(f"🔍 {item['query']} ({item['timestamp']})"):
-                st.markdown(f'<div class="result-box">{item.get("answer_translated", item["result"].get("answer", "No details"))[:300]}...</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="result-box">{item.get("answer", item["result"].get("answer", "No details"))[:300]}...</div>', unsafe_allow_html=True)
     else:
         st.info("📜 No history yet!")
 
