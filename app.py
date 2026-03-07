@@ -225,6 +225,32 @@ SCHEMES = {
             "helpline": "1800-345-6777",
             "steps": ["ग्राम पंचायत जाएं", "जॉब कार्ड के लिए कहें", "फॉर्म भरें", "पंजीकृत हों", "काम के लिए आवेदन करें", "15 दिन में काम", "भुगतान पाएं"]
         }
+    },
+    "MSME": {
+        "English": {
+            "name": "MSME Schemes - Micro, Small & Medium Enterprises",
+            "about": "Government of India schemes to support entrepreneurs in setting up and growing micro, small, and medium enterprises through credit, marketing, technology and skill support",
+            "benefit": "Multiple benefits including credit support, marketing assistance, cluster development, technology upgradation, skill development, and financial grants",
+            "how_much": "Varies by scheme - from concessional loans up to Rs.1-5 crore to grants covering 50-100% of project cost",
+            "eligibility": "Entrepreneurs, self-employed, women entrepreneurs, ST/SC communities, handicapped persons, ex-servicemen, first generation entrepreneurs, MSMEs",
+            "documents": "PAN, Aadhar, Bank account, Business plan, Registration certificate (varies by scheme)",
+            "website": "https://msme.gov.in",
+            "helpline": "1800-180-6763 (Udyami Helpline) - 6pm to 10pm Hindi/English",
+            "steps": ["Call 1800-180-6763 Udyami Helpline", "Get information about relevant scheme", "Prepare detailed business plan", "Gather documents (PAN, Aadhar, Bank details)", "Approach nodal agency or bank", "Submit complete application", "Get approval from concerned ministry", "Receive financial support/grant"],
+            "schemes": "Credit Support for loans, Marketing Assistance for market development, Cluster Development for enterprise groups, Technology Upgradation for equipment modernization, Skill Development training programs, Raw Material Support, Infrastructure Development"
+        },
+        "हिंदी": {
+            "name": "एमएसएमई योजनाएं - सूक्ष्म, लघु और मध्यम उद्यम",
+            "about": "भारत सरकार की योजनाएं जो उद्यमियों को सूक्ष्म, लघु और मध्यम उद्यम स्थापित करने में समर्थन देती हैं",
+            "benefit": "साख सहायता, विपणन सहायता, समूह विकास, तकनीकी उन्नयन, कौशल विकास, वित्तीय सहायता",
+            "how_much": "योजना के अनुसार - रियायती ऋण से लेकर अनुदान 50-100% तक",
+            "eligibility": "उद्यमी, स्व-नियोजित, महिला उद्यमी, अनुसूचित जाति/जनजाति, विकलांग, पूर्व सैनिक",
+            "documents": "पैन, आधार, बैंक खाता, व्यवसायिक योजना, पंजीकरण प्रमाणपत्र",
+            "website": "https://msme.gov.in",
+            "helpline": "1800-180-6763 (उद्यमी हेल्पलाइन) - 6 से 10 शाम हिंदी/अंग्रेजी",
+            "steps": ["1800-180-6763 पर कॉल करें", "प्रासंगिक योजना के बारे में जानकारी प्राप्त करें", "व्यवसायिक योजना तैयार करें", "आवश्यक दस्तावेज एकत्र करें", "नोडल एजेंसी को आवेदन करें", "अनुमोदन प्राप्त करें", "वित्तीय सहायता प्राप्त करें"],
+            "schemes": "साख सहायता, विपणन सहायता, समूह विकास, तकनीकी उन्नयन, कौशल विकास"
+        }
     }
 }
 
@@ -272,11 +298,16 @@ def answer_question(question, lang):
     # MGNREGA keywords  
     mgnrega_keywords = ['mgnrega', 'manrega', 'rural employment', '100 days', 'work', '210', '300', 'मनरेगा', 'रोजगार', 'काम']
     
+    # MSME keywords
+    msme_keywords = ['msme', 'small business', 'startup', 'enterprise', 'entrepreneur', 'small medium', 'udyami', 'एमएसएमई', 'छोटा व्यवसाय', 'स्टार्टअप', 'उद्यमी', 'उद्यम', 'business setup', 'credit support', 'marketing']
+    
     # Check which scheme
     if any(kw in question_lower for kw in pm_kisan_keywords):
         scheme = "PM-Kisan"
     elif any(kw in question_lower for kw in mgnrega_keywords):
         scheme = "MGNREGA"
+    elif any(kw in question_lower for kw in msme_keywords):
+        scheme = "MSME"
     else:
         return None
     
