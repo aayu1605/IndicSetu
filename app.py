@@ -122,7 +122,7 @@ PDF_SCHEMES_DATABASE = {
 }
 
 def get_pdf_scheme_answer(question, selected_language):
-    """Search PDF schemes and return translated answer"""
+    """Search PDF schemes and return translated answer in selected language"""
     question_lower = question.lower()
     
     # Find matching scheme
@@ -136,10 +136,34 @@ def get_pdf_scheme_answer(question, selected_language):
                 data = scheme_data["English"]
             
             # Build response in selected language
-            if selected_language == "హిందీ":
+            if selected_language == "हिंदी":
                 response = f"""**{scheme_name}**
 
 **विवरण:** {data['description']}
+
+**प्रकृति:** {data['nature']}
+
+**पात्रता:** {data['eligibility']}
+
+**हेल्पलाइन:** 1800-180-6763
+🌐 वेबसाइट: https://msme.gov.in"""
+            
+            elif selected_language == "ગુજરાતી":
+                response = f"""**{scheme_name}**
+
+**વર્ણન:** {data['description']}
+
+**પ્રકૃતિ:** {data['nature']}
+
+**પાત્રતા:** {data['eligibility']}
+
+**હેલ્પલાઇન:** 1800-180-6763
+🌐 વેબસાઇટ: https://msme.gov.in"""
+            
+            elif selected_language == "मराठी":
+                response = f"""**{scheme_name}**
+
+**वर्णन:** {data['description']}
 
 **प्रकृति:** {data['nature']}
 
@@ -172,7 +196,31 @@ def get_pdf_scheme_answer(question, selected_language):
 **ஹெல்பலைன்:** 1800-180-6763
 🌐 வெப்சைட்: https://msme.gov.in"""
             
-            else:  # English
+            elif selected_language == "বাংলা":
+                response = f"""**{scheme_name}**
+
+**বর্ণনা:** {data['description']}
+
+**প্রকৃति:** {data['nature']}
+
+**যোग्यता:** {data['eligibility']}
+
+**হেল्পলাইন:** 1800-180-6763
+🌐 ওয়েबசাইট: https://msme.gov.in"""
+            
+            elif selected_language == "ਪੰਜਾਬੀ":
+                response = f"""**{scheme_name}**
+
+**ਵਰਣਨ:** {data['description']}
+
+**ਪ੍ਰਕਿਰਤੀ:** {data['nature']}
+
+**ਯੋਗਤਾ:** {data['eligibility']}
+
+**ਹੈਲਪਲਾਈਨ:** 1800-180-6763
+🌐 ਵੈਬਸਾਈਟ: https://msme.gov.in"""
+            
+            else:  # English and others
                 response = f"""**{scheme_name}**
 
 **Description:** {data['description']}
